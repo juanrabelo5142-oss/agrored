@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar {{ producto.nombreproducto }} | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --negro: #1a1a1a;
+            --gris-texto: #555555;
+            --blanco: #ffffff;
+            --fondo: #f4f7f6;
+            --radio: 20px;
+            --sombra: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background-color: var(--fondo);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--negro);
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            padding: 15px 5%;
+            background: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { 
+            font-size: 24px; 
+            font-weight: 800; 
+            text-decoration: none; 
+            color: var(--negro);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo span { color: var(--verde-agro); }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            padding: 50px 20px;
+        }
+
+        .publish-card {
+            background: var(--blanco);
+            width: 100%;
+            max-width: 800px;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            background: var(--verde-agro);
+            padding: 40px;
+            color: var(--blanco);
+            position: relative;
+        }
+
+        .card-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .card-header p {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--blanco);
+            padding: 10px;
+            border-radius: 50%;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .btn-back:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* --- CUERPO DEL FORMULARIO --- */
+        .card-body { padding: 40px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .full-width { grid-column: span 2; }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+
+        label {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--negro);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label span { color: var(--verde-agro); font-size: 18px; }
+
+        input, select, textarea {
+            padding: 14px 18px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            background: #fafafa;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--verde-agro);
+            background: var(--blanco);
+            box-shadow: 0 0 0 4px var(--verde-suave);
+        }
+
+        /* --- SECCIÓN DE IMAGEN --- */
+        .image-upload-section {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: var(--verde-suave);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px dashed var(--verde-agro);
+        }
+
+        .current-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid var(--blanco);
+        }
+
+        .upload-controls p {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* --- BOTÓN ACCIÓN --- */
+        .btn-publish {
+            width: 100%;
+            background: var(--verde-agro);
+            color: var(--blanco);
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(6, 188, 103, 0.2);
+            transition: 0.3s;
+        }
+
+        .btn-publish:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(6, 188, 103, 0.3);
+        }
+
+        footer {
+            padding: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--gris-texto);
+        }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .card-header, .card-body { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" height="35" alt="Logo">
+            AGRO<span>RED</span>
+        </a>
+    </nav>
+
+    <div class="main-container">
+        <div class="publish-card">
+            <div class="card-header">
+                <a href="{{ url_for('paginaproductor') }}" class="btn-back">
+                    <span class="material-icons-round">close</span>
+                </a>
+                <h1>Editar Producto</h1>
+                <p>Actualiza la información de tu cosecha para los compradores.</p>
+            </div>
+
+            <div class="card-body">
+                <form action="{{ url_for('editar_producto', id=producto.id) }}" method="POST" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        
+                        <div class="form-group full-width">
+                            <label><span class="material-icons-round">inventory_2</span> Nombre del Producto</label>
+                            <input type="text" name="nombreproducto" value="{{ producto.nombreproducto }}" required placeholder="Ej: Papa Sabanera">
+                        </div>
+
+                        <div class="form-group">
+                            <label><span class="material-icons-round">payments</span> Precio (COP)</label>
+                            <input type="number" name="precio" value="{{ producto.precio|int }}" required placeholder="0.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label><span class="material-icons-round">scale</span> Stock Disponible</label>
+                            <input type="number" name="stock" value="{{ producto.stock }}" required placeholder="Ej: 50">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><span class="material-icons-round">category</span> Categoría</label>
+                            <select name="categoria">
+                                <option value="verduras" {% if producto.categoria == 'verduras' %}selected{% endif %}>Verduras y Hortalizas</option>
+                                <option value="frutas" {% if producto.categoria == 'frutas' %}selected{% endif %}>Frutas</option>
+                                <option value="granos" {% if producto.categoria == 'granos' %}selected{% endif %}>Granos y Semillas</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><span class="material-icons-round">description</span> Descripción</label>
+                            <textarea name="descripcion" rows="4" placeholder="Describe la frescura y origen de tu producto...">{{ producto.descripcion }}</textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><span class="material-icons-round">image</span> Imagen del Producto</label>
+                            <div class="image-upload-section">
+                                <img src="{{ url_for('static', filename=producto.ruta_imagen) }}" class="current-preview" alt="Vista previa">
+                                <div class="upload-controls">
+                                    <p>¿Deseas cambiar la imagen actual?</p>
+                                    <input type="file" name="imagen_archivo" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="full-width">
+                            <button type="submit" class="btn-publish">
+                                <span class="material-icons-round">published_with_changes</span>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 AgroRed - El campo en tus manos
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroRed | Calendario de Cosecha</title>
+    
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --red-olimpica: #e30613;
+            --blue-olimpica: #004a99;
+            --bg-light: #f0f2f5;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        body { font-family: 'Public Sans', sans-serif; background: var(--bg-light); padding: 10px; }
+
+        /* Contenedor tipo Tarjeta Olímpica */
+        .market-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border-top: 6px solid var(--red-olimpica);
+        }
+
+        /* Encabezado Estilo Banner */
+        .market-header {
+            background: var(--blue-olimpica);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .market-header h1 { font-size: 22px; font-weight: 900; letter-spacing: -1px; }
+
+        /* Personalización de FullCalendar */
+        #calendar { padding: 20px; }
+        .fc-header-toolbar { padding: 10px; background: #fff; border-radius: 10px; }
+        .fc-toolbar-title { color: var(--blue-olimpica) !important; font-weight: 800; text-transform: uppercase; }
+        
+        /* Botones estilo App */
+        .fc-button-primary { 
+            background-color: var(--blue-olimpica) !important; 
+            border: none !important; 
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            font-size: 12px !important;
+        }
+
+        /* Estilo de los días */
+        .fc-daygrid-day-number { font-weight: 700; color: #444; padding: 10px !important; }
+        .fc-day-today { background: rgba(0, 74, 153, 0.05) !important; }
+
+        /* Widget de Clima Interno (En cada día) */
+        .weather-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            margin: 2px 5px;
+            padding: 5px 8px;
+            border-radius: 6px;
+            border-left: 3px solid var(--blue-olimpica);
+        }
+
+        .weather-temp { font-weight: 800; font-size: 13px; color: #333; }
+        .weather-icon-small { font-size: 16px; color: var(--blue-olimpica); }
+
+        /* Etiqueta de "Siembra Recomendada" (Acento Verde) */
+        .agro-tag {
+            font-size: 10px;
+            background: #28a745;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin: 2px 5px;
+            text-align: center;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="market-container">
+        <div class="market-header">
+            <h1>AGRORED <span style="color: #ffda00;">|</span> PRECIOS & CLIMA</h1>
+            <span class="material-icons-round">shopping_basket</span>
+        </div>
+        
+        <div id='calendar'></div>
+    </div>
+
+<script>
+    const API_KEY = "D2X2EECZ63K9Q9G8QWHK3ZUKM";
+    const LOCATION = "Bogota,CO";
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const calendarEl = document.getElementById('calendar');
+        
+        // Cargamos los datos reales de tu BD
+        const weatherMap = await fetchWeatherReal();
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            // Esta función se encarga de que TODOS los días tengan clima
+            dayCellDidMount: function(info) {
+                const dateStr = info.date.toISOString().split('T')[0];
+                let dayData = weatherMap[dateStr];
+
+                // Si no hay datos (días futuros lejanos), creamos un "clima promedio"
+                if (!dayData) {
+                    dayData = { temp: 18, icon: 'filter_drama' }; // Promedio Bogotá
+                } else {
+                    // Mapear iconos de la API a Material Icons
+                    const map = { 'rain':'water_drop', 'clear-day':'wb_sunny', 'cloudy':'cloud', 'partly-cloudy-day':'filter_drama' };
+                    dayData.icon = map[dayData.iconRaw] || 'cloud';
+                }
+
+                // Inyectar el Widget de clima
+                const wBox = document.createElement('div');
+                wBox.className = 'weather-box';
+                wBox.innerHTML = `
+                    <span class="weather-temp">${dayData.temp}°C</span>
+                    <span class="material-icons-round weather-icon-small">${dayData.icon}</span>
+                `;
+                
+                info.el.querySelector('.fc-daygrid-day-events').appendChild(wBox);
+
+                // Agregar etiqueta de recomendación si el clima es bueno
+                if(dayData.temp > 15) {
+                    const tag = document.createElement('div');
+                    tag.className = 'agro-tag';
+                    tag.innerText = 'SIEMBRA OPT.';
+                    info.el.querySelector('.fc-daygrid-day-events').appendChild(tag);
+                }
+            }
+        });
+
+        calendar.render();
+    });
+
+    async function fetchWeatherReal() {
+        try {
+            const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LOCATION}?unitGroup=metric&key=${API_KEY}&contentType=json&lang=es`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            const map = {};
+            data.days.forEach(day => {
+                map[day.datetime] = {
+                    temp: Math.round(day.temp),
+                    iconRaw: day.icon
+                };
+            });
+            return map;
+        } catch (e) {
+            console.error("Error BD Clima", e);
+            return {};
+        }
+    }
+</script>
+</body>
+</html>

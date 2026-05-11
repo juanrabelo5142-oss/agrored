@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --amarillo-agro: #f9d71c;
+            --amarillo-suave: #fff9e6;
+            --rojo: #ff4d4d;
+            --rojo-suave: #fff1f1;
+            --negro: #1a1a1a;
+            --gris-texto: #555555;
+            --blanco: #ffffff;
+            --fondo: #f4f7f6;
+            --radio: 20px;
+            --sombra: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background: var(--fondo); 
+            color: var(--negro); 
+            min-height: 100vh;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--blanco);
+            padding: 30px 5%;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .admin-title h1 { 
+            font-size: 28px; 
+            font-weight: 800; 
+            letter-spacing: -0.5px;
+            color: var(--negro);
+        }
+        .admin-title h1 span { color: var(--verde-agro); }
+
+        .btn-volver {
+            background: var(--negro);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-volver:hover { 
+            background: var(--verde-agro);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(6, 188, 103, 0.2);
+        }
+
+        /* --- CONTENIDO --- */
+        main { padding: 40px 5%; max-width: 1400px; margin: 0 auto; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--blanco);
+            padding: 25px;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+        .icon-users { background: var(--verde-suave); color: var(--verde-agro); }
+        .icon-producers { background: var(--amarillo-suave); color: #b08d00; }
+
+        .stat-info h3 { font-size: 13px; text-transform: uppercase; color: var(--gris-texto); font-weight: 700; }
+        .stat-info p { font-size: 32px; font-weight: 800; color: var(--negro); }
+
+        /* --- TABLA --- */
+        .table-wrapper {
+            background: var(--blanco);
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .table-container { width: 100%; overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            background: #fafafa;
+            color: var(--gris-texto);
+            text-align: left;
+            padding: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        tr:hover td { background: #fcfcfc; }
+
+        .user-id { font-family: monospace; font-weight: 700; color: #aaa; }
+        .user-name { font-weight: 700; color: var(--negro); }
+        .user-email { color: var(--gris-texto); font-size: 13px; }
+
+        /* --- BADGES --- */
+        .role-badge {
+            display: inline-flex;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-radius: 50px;
+        }
+
+        .badge-cliente { background: var(--verde-suave); color: var(--verde-agro); }
+        .badge-productor { background: var(--amarillo-suave); color: #b08d00; }
+        .badge-admin { background: var(--rojo-suave); color: var(--rojo); }
+
+        /* --- ACCIONES --- */
+        .actions { display: flex; gap: 8px; }
+        .btn-action {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: 0.3s;
+            background: var(--fondo);
+            color: var(--gris-texto);
+        }
+        
+        .btn-edit:hover { background: var(--verde-agro); color: white; }
+        .btn-delete:hover { background: var(--rojo); color: white; }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 20px; text-align: center; }
+            .admin-title h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="admin-title">
+            <h1>Gestión de <span>Usuarios</span></h1>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn-volver">
+            <span class="material-icons-round">shopping_basket</span> VOLVER AL MERCADO
+        </a>
+    </header>
+
+    <main>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-users">
+                    <span class="material-icons-round">group</span>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Registrados</h3>
+                    <p>{{ usuarios|length }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-producers">
+                    <span class="material-icons-round">agriculture</span>
+                </div>
+                <div class="stat-info">
+                    <h3>Productores Activos</h3>
+                    <p>{{ usuarios|selectattr('rol', 'equalto', 'productor')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Contacto</th>
+                            <th>Identificación</th>
+                            <th>Rol</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in usuarios %}
+                        <tr>
+                            <td class="user-id">#{{ user.id }}</td>
+                            <td>
+                                <div class="user-name">{{ user.nombre }}</div>
+                                <div class="user-email">{{ user.email }}</div>
+                            </td>
+                            <td style="font-weight: 600;">
+                                {{ user.telefono if user.telefono else 'Sin número' }}
+                            </td>
+                            <td>
+                                <span style="font-size: 11px; font-weight: 800; color: #bbb; display: block; margin-bottom: 2px;">{{ user.tipo_documento }}</span>
+                                <span style="font-weight: 700;">{{ user.numero_documento }}</span>
+                            </td>
+                            <td>
+                                <span class="role-badge badge-{{ user.rol }}">
+                                    {{ user.rol }}
+                                </span>
+                            </td>
+                            <td class="actions">
+                                <a href="#" class="btn-action btn-edit" title="Editar">
+                                    <span class="material-icons-round" style="font-size: 20px;">edit</span>
+                                </a>
+                                <a href="#" class="btn-action btn-delete" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este usuario?')">
+                                    <span class="material-icons-round" style="font-size: 20px;">delete</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

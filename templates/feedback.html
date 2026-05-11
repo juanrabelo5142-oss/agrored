@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --amarillo-agro: #f9d71c;
+            --negro: #1a1a1a;
+            --gris-texto: #555555;
+            --blanco: #ffffff;
+            --fondo: #f4f7f6;
+            --radio: 24px;
+            --sombra: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background-color: var(--fondo);
+            color: var(--negro);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            padding: 15px 5%;
+            background: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { 
+            font-size: 24px; 
+            font-weight: 800; 
+            text-decoration: none; 
+            color: var(--negro);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo span { color: var(--verde-agro); }
+
+        .btn-nav-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--gris-texto);
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .btn-nav-back:hover { color: var(--verde-agro); }
+
+        /* --- CONTENEDOR --- */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px;
+        }
+
+        .feedback-card {
+            background: var(--blanco);
+            width: 100%;
+            max-width: 650px;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--verde-agro);
+            padding: 40px;
+            color: var(--blanco);
+            text-align: center;
+        }
+
+        .card-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .card-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* --- CUERPO DEL FORMULARIO --- */
+        .card-body { padding: 40px; }
+
+        .form-label {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: var(--negro);
+        }
+
+        /* --- RATING SELECTOR --- */
+        .rating-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .rating-grid input[type="radio"] { display: none; }
+
+        .rate-box {
+            background: #fafafa;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rate-box span.material-icons-round {
+            font-size: 32px;
+            color: #ccc;
+            transition: 0.3s;
+        }
+
+        .rate-box .text {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--gris-texto);
+        }
+
+        .rate-box:hover {
+            border-color: var(--verde-agro);
+            background: var(--verde-suave);
+        }
+
+        .rating-grid input[type="radio"]:checked + .rate-box {
+            background: var(--verde-suave);
+            border-color: var(--verde-agro);
+        }
+
+        .rating-grid input[type="radio"]:checked + .rate-box span {
+            color: var(--verde-agro);
+            transform: scale(1.2);
+        }
+
+        /* --- INPUTS --- */
+        .input-group { margin-bottom: 25px; }
+
+        input[type="email"], textarea {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            background: #fafafa;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--verde-agro);
+            background: var(--blanco);
+            box-shadow: 0 0 0 4px var(--verde-suave);
+        }
+
+        textarea { height: 140px; resize: none; }
+
+        /* --- BOTÓN --- */
+        .btn-submit {
+            width: 100%;
+            background: var(--verde-agro);
+            color: var(--blanco);
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 20px rgba(6, 188, 103, 0.2);
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(6, 188, 103, 0.3);
+            background: #05a85c;
+        }
+
+        footer {
+            padding: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--gris-texto);
+            background: var(--blanco);
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 600px) {
+            .rating-grid { grid-template-columns: repeat(2, 1fr); }
+            .card-header { padding: 30px 20px; }
+            .card-body { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" height="35" alt="Logo">
+            AGRO<span>RED</span>
+        </a>
+        <a href="{{ url_for('index') }}" class="btn-nav-back">
+            <span class="material-icons-round">arrow_back</span>
+            Volver a la Tienda
+        </a>
+    </nav>
+
+    <main class="main-container">
+        <div class="feedback-card">
+            <div class="card-header">
+                <h1>Tu Opinión Cuenta</h1>
+                <p>Ayúdanos a cultivar una mejor experiencia para todos.</p>
+            </div>
+
+            <div class="card-body">
+                <form action="{{ url_for('enviar_feedback') }}" method="POST">
+                    
+                    <label class="form-label">¿Cómo calificarías tu experiencia hoy?</label>
+                    <div class="rating-grid">
+                        
+                        <input type="radio" name="calificacion" value="Mala" id="mala">
+                        <label for="mala" class="rate-box">
+                            <span class="material-icons-round">sentiment_very_dissatisfied</span>
+                            <span class="text">Mala</span>
+                        </label>
+
+                        <input type="radio" name="calificacion" value="Regular" id="regular">
+                        <label for="regular" class="rate-box">
+                            <span class="material-icons-round">sentiment_neutral</span>
+                            <span class="text">Regular</span>
+                        </label>
+
+                        <input type="radio" name="calificacion" value="Buena" id="buena" checked>
+                        <label for="buena" class="rate-box">
+                            <span class="material-icons-round">sentiment_satisfied</span>
+                            <span class="text">Buena</span>
+                        </label>
+
+                        <input type="radio" name="calificacion" value="Excelente" id="excelente">
+                        <label for="excelente" class="rate-box">
+                            <span class="material-icons-round">sentiment_very_satisfied</span>
+                            <span class="text">Excelente</span>
+                        </label>
+
+                    </div>
+
+                    <div class="input-group">
+                        <label class="form-label">Correo Electrónico (Opcional)</label>
+                        <input type="email" name="email" placeholder="ejemplo@correo.com">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="form-label">Tu Comentario o Sugerencia</label>
+                        <textarea name="mensaje" required placeholder="Escribe aquí tus comentarios..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <span class="material-icons-round">send</span>
+                        Enviar Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        © 2026 AgroRed Colombia - Construyendo juntos el futuro del campo
+    </footer>
+
+</body>
+</html>

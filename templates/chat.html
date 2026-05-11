@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat | {{ productor_nombre }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --negro: #000000;
+            --blanco: #ffffff;
+            --verde-whatsapp: #25d366; /* Verde icónico */
+            --verde-agro: #06bc67;
+            --verde-chat: #dcf8c6; /* Fondo burbuja enviada */
+            --gris-chat: #ffffff;  /* Fondo burbuja recibida */
+            --fondo-whatsapp: #e5ddd5;
+            --borde-pixel: 3px solid #000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--fondo-whatsapp);
+            font-family: 'Public Sans', sans-serif;
+        }
+
+        .agro-chat-app {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* --- SIDEBAR (Lista de chats) --- */
+        .sidebar {
+            width: 350px;
+            border-right: var(--borde-pixel);
+            display: flex;
+            flex-direction: column;
+            background: #f0f2f5;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header-top {
+            padding: 15px 20px;
+            background: #ededed;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lista-contactos {
+            flex-grow: 1;
+            overflow-y: auto;
+            background: var(--blanco);
+        }
+
+        .contacto-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #f2f2f2;
+            background: #f0f2f5; /* Activo */
+            cursor: pointer;
+        }
+
+        /* --- ÁREA DE CHAT (Lado derecho) --- */
+        .chat-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            /* Patrón de fondo estilo WhatsApp */
+            background-color: #e5ddd5;
+            background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+        }
+
+        /* Header del Chat */
+        .chat-header {
+            padding: 10px 20px;
+            background: #ededed;
+            border-bottom: var(--borde-pixel);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            background: #ccc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000;
+        }
+
+        .chat-header-info h3 { font-size: 16px; font-weight: 800; text-transform: uppercase; }
+        .chat-header-info p { font-size: 12px; color: var(--verde-agro); font-weight: 700; }
+
+        /* Área de Mensajes */
+        .messages-area {
+            flex-grow: 1;
+            padding: 20px 7%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bubble {
+            max-width: 65%;
+            padding: 8px 12px;
+            border: 2px solid #000;
+            font-size: 14px;
+            font-weight: 600;
+            position: relative;
+            box-shadow: 3px 3px 0px #000;
+            line-height: 1.4;
+        }
+
+        .recibido { 
+            align-self: flex-start; 
+            background: var(--blanco); 
+            border-radius: 0 12px 12px 12px;
+        }
+
+        .enviado { 
+            align-self: flex-end; 
+            background: var(--verde-chat); 
+            border-radius: 12px 0 12px 12px;
+        }
+
+        .time { 
+            display: inline-block;
+            font-size: 10px; 
+            margin-left: 10px;
+            float: right;
+            margin-top: 5px;
+            color: #666;
+            font-weight: 800;
+        }
+
+        /* BARRA DE ENTRADA (Estilo WhatsApp) */
+        .input-bar-container {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border-top: var(--borde-pixel);
+        }
+
+        .input-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-bar input {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border: 2px solid #000;
+            border-radius: 25px;
+            font-family: inherit;
+            font-weight: 600;
+            outline: none;
+            box-shadow: 3px 3px 0px #000;
+        }
+
+        .btn-send {
+            background: var(--verde-agro);
+            color: var(--negro);
+            border: 2px solid #000;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 3px 3px 0px #000;
+            transition: 0.1s;
+        }
+
+        .btn-send:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+
+        @media (max-width: 800px) {
+            .sidebar { display: none; }
+            .bubble { max-width: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="agro-chat-app">
+        <aside class="sidebar">
+            <div class="sidebar-header-top">
+                <div class="avatar" style="background: var(--verde-agro);">
+                    <span class="material-icons-round" style="color: white;">person</span>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <span class="material-icons-round">message</span>
+                    <a href="{{ url_for('index') }}" style="color: inherit;"><span class="material-icons-round">home</span></a>
+                </div>
+            </div>
+
+            <div class="lista-contactos">
+                <div class="contacto-item">
+                    <div class="avatar">
+                        <span class="material-icons-round">agriculture</span>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-weight: 800; font-size: 14px;">{{ productor_nombre }}</span>
+                        </div>
+                        <p style="font-size: 12px; color: #666; font-weight: 600;">Productor de AgroRed</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-main">
+            <header class="chat-header">
+                <a href="{{ url_for('bandeja') }}" style="color: black; text-decoration: none;">
+                    <span class="material-icons-round">arrow_back</span>
+                </a>
+                <div class="avatar">
+                    <span class="material-icons-round">account_circle</span>
+                </div>
+                <div class="chat-header-info">
+                    <h3>{{ productor_nombre }}</h3>
+                    <p>En línea • {{ nombre_finca }}</p>
+                </div>
+            </header>
+
+            <div class="messages-area" id="chatContainer">
+                {% if mensajes %}
+                    {% for msg in mensajes %}
+                        <div class="bubble {% if msg.emisor_id == session['user_id'] %}enviado{% else %}recibido{% endif %}">
+                            {{ msg.contenido }}
+                            <span class="time">
+                                {% if msg.fecha is string %}{{ msg.fecha }}{% else %}{{ msg.fecha.strftime('%H:%M %p') }}{% endif %}
+                            </span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div id="vacioHint" style="text-align: center; margin-top: 20vh;">
+                        <span style="background: #fff; border: 2px solid #000; padding: 10px 20px; font-weight: 800; text-transform: uppercase; box-shadow: 5px 5px 0px #000;">
+                            Cifra tu negocio aquí 🔒
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="input-bar-container">
+                <form class="input-bar" id="chatForm">
+                    <span class="material-icons-round" style="color: #666; cursor: pointer;">sentiment_satisfied_alt</span>
+                    <span class="material-icons-round" style="color: #666; cursor: pointer;">attach_file</span>
+                    <input type="text" id="mensajeInput" name="mensaje" placeholder="Escribe un mensaje" required autocomplete="off">
+                    <button type="submit" class="btn-send">
+                        <span class="material-icons-round" style="font-size: 20px;">send</span>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chatForm');
+        const mensajeInput = document.getElementById('mensajeInput');
+        const chatContainer = document.getElementById('chatContainer');
+        const vacioHint = document.getElementById('vacioHint');
+
+        function scrollAbajo() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        window.onload = scrollAbajo;
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const texto = mensajeInput.value;
+            const receptorId = "{{ receptor_id }}";
+
+            if (!texto.trim()) return;
+
+            fetch(`/enviar_mensaje/${receptorId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `mensaje=${encodeURIComponent(texto)}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    if (vacioHint) vacioHint.style.display = 'none';
+                    const ahora = new Date();
+                    const horaFormato = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    const nuevoMensaje = document.createElement('div');
+                    nuevoMensaje.classList.add('bubble', 'enviado');
+                    nuevoMensaje.innerHTML = `${texto}<span class="time">${horaFormato}</span>`;
+                    
+                    chatContainer.appendChild(nuevoMensaje);
+                    mensajeInput.value = '';
+                    scrollAbajo();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

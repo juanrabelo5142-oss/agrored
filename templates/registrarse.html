@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroRed | Registro Completo</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --amarillo-agro: #f9d71c;
+            --negro: #1a1a1a;
+            --blanco: #ffffff;
+            --gris-texto: #555555;
+            --gris-claro: #f4f7f6;
+            --radio: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background-color: var(--gris-claro);
+            min-height: 100vh;
+            display: flex;
+            color: var(--negro);
+        }
+
+        .register-container { display: flex; width: 100%; min-height: 100vh; }
+
+        /* --- IMAGEN LATERAL --- */
+        .register-image {
+            flex: 0.8;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--negro);
+        }
+
+        .register-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+        }
+
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 60px;
+        }
+
+        .image-overlay h2 { 
+            color: white;
+            font-size: 48px; 
+            font-weight: 800; 
+            line-height: 1.1;
+        }
+
+        /* --- SECCIÓN DEL FORMULARIO --- */
+        .register-form-section {
+            flex: 1.2;
+            background: var(--blanco);
+            padding: 60px 8%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logo-reg { 
+            font-size: 24px; 
+            font-weight: 800; 
+            margin-bottom: 30px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-reg span { color: var(--verde-agro); }
+
+        h3 { font-size: 32px; font-weight: 800; margin-bottom: 8px; color: var(--negro); }
+        .subtitle { color: var(--gris-texto); font-weight: 500; font-size: 15px; margin-bottom: 40px; }
+
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { 
+            font-weight: 700; 
+            font-size: 13px; 
+            margin-bottom: 8px; 
+            color: var(--negro);
+        }
+
+        .input-group input, .input-group select {
+            padding: 15px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Public Sans', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            outline: none;
+            background: #fafafa;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--verde-agro);
+            background: white;
+            box-shadow: 0 0 0 4px var(--verde-suave);
+        }
+
+        /* Campo oculto para Productor */
+        #campo-productor {
+            display: none;
+            background: var(--verde-suave);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--verde-agro);
+            margin-bottom: 5px;
+        }
+
+        .password-wrapper { position: relative; }
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 38px; /* Ajustado para estar centrado con el input */
+            cursor: pointer;
+            color: var(--gris-texto);
+            user-select: none;
+        }
+
+        .btn-register {
+            grid-column: span 2;
+            margin-top: 20px;
+            padding: 18px;
+            background: var(--verde-agro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(6, 188, 103, 0.2);
+        }
+
+        .btn-register:hover {
+            background: var(--negro);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 1000px) {
+            .register-image { display: none; }
+            .register-form-section { padding: 40px 5%; }
+            form { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="register-container">
+        
+        <div class="register-image">
+            <img src="https://images.pexels.com/photos/1267325/pexels-photo-1267325.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Campo">
+            <div class="image-overlay">
+                <h2>Cosechamos<br>Oportunidades<br>Para Todos.</h2>
+            </div>
+        </div>
+
+        <div class="register-form-section">
+            <div class="logo-reg">
+                <img src="{{ url_for('static', filename='img/logo1.png') }}" height="30">
+                <div>AGRO<span>RED</span></div>
+            </div>
+            
+            <h3>Crear cuenta</h3>
+            <p class="subtitle">Únete a la red que conecta el campo con la ciudad.</p>
+
+            <form action="{{ url_for('registrarse') }}" method="POST">
+                
+                <div class="input-group full-width">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="nombre" placeholder="Escribe tu nombre completo" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" placeholder="ejemplo@correo.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Número de Celular</label>
+                    <input type="tel" name="telefono" placeholder="300 000 0000" required>
+                </div>
+
+                <div class="input-group full-width password-wrapper">
+                    <label>Contraseña</label>
+                    <input type="password" name="contrasena" id="passwordField" placeholder="Mínimo 8 caracteres" required>
+                    <span class="material-icons-round toggle-password" onclick="togglePassword()">visibility</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Tipo de Documento</label>
+                    <select name="tipo_documento" required>
+                        <option value="CC">Cédula de Ciudadanía</option>
+                        <option value="NIT">NIT (Empresas)</option>
+                        <option value="CE">Cédula de Extranjería</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>Número de Documento</label>
+                    <input type="text" name="numero_documento" placeholder="123456789" required>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>¿Cuál es tu rol en AgroRed?</label>
+                    <select name="rol" id="rolSelect" onchange="verificarRol()" required>
+                        <option value="" disabled selected>Selecciona tu perfil...</option>
+                        <option value="cliente">Quiero comprar (Cliente)</option>
+                        <option value="productor">Quiero vender (Productor/Campesino)</option>
+                    </select>
+                </div>
+
+                <div id="campo-productor" class="input-group full-width">
+                    <label style="color: var(--verde-agro);">Nombre de tu Finca o Negocio</label>
+                    <input type="text" name="nombre_finca" id="inputFinca" placeholder="Ej: Finca La Esperanza">
+                    <small style="font-size: 11px; margin-top: 8px; color: var(--gris-texto); font-weight: 600;">Este nombre será visible para tus compradores.</small>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Dirección de residencia o entrega</label>
+                    <input type="text" name="direccion" placeholder="Calle, Carrera, número..." required>
+                </div>
+
+                <div class="input-group">
+                    <label>Departamento</label>
+                    <select name="departamento" required>
+                        <option value="" disabled selected>Seleccionar...</option>
+                        {% for dept in departamentos %}
+                        <option value="{{ dept|lower }}">{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Municipio</label>
+                    <input type="text" name="municipio" placeholder="Ciudad o Municipio" required>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Código Postal</label>
+                    <input type="text" name="codigo_postal" placeholder="Opcional" required>
+                </div>
+
+                <button type="submit" class="btn-register">
+                    Completar registro
+                    <span class="material-icons-round">arrow_forward</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function verificarRol() {
+            const rol = document.getElementById('rolSelect').value;
+            const campoFinca = document.getElementById('campo-productor');
+            const inputFinca = document.getElementById('inputFinca');
+
+            if (rol === 'productor') {
+                campoFinca.style.display = 'flex';
+                inputFinca.required = true;
+            } else {
+                campoFinca.style.display = 'none';
+                inputFinca.required = false;
+                inputFinca.value = ''; 
+            }
+        }
+
+        function togglePassword() {
+            const passwordField = document.getElementById('passwordField');
+            const toggleIcon = document.querySelector('.toggle-password');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.textContent = 'visibility_off';
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.textContent = 'visibility';
+            }
+        }
+    </script>
+</body>
+</html>

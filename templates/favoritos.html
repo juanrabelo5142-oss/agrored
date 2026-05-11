@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Favoritos | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --rojo-eliminar: #ff4d4d;
+            --negro: #1a1a1a;
+            --gris-texto: #555555;
+            --blanco: #ffffff;
+            --fondo: #f4f7f6;
+            --radio: 20px;
+            --radio-card: 16px;
+            --sombra: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background-color: var(--fondo);
+            color: var(--negro);
+            line-height: 1.6;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            padding: 15px 5%;
+            background: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo { 
+            font-size: 24px; 
+            font-weight: 800; 
+            text-decoration: none; 
+            color: var(--negro);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo span { color: var(--verde-agro); }
+
+        .badge-fav {
+            font-weight: 600;
+            font-size: 12px;
+            background: var(--verde-suave);
+            color: var(--verde-agro);
+            padding: 6px 15px;
+            border-radius: 20px;
+        }
+
+        /* --- CONTENEDOR --- */
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 40px 5%; 
+        }
+
+        /* BOTONES DE NAVEGACIÓN */
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-return {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--gris-texto);
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        
+        .btn-return:hover { color: var(--verde-agro); }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        /* --- GRID DE FAVORITOS --- */
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .fav-card {
+            background: var(--blanco);
+            border-radius: var(--radio-card);
+            padding: 15px;
+            box-shadow: var(--sombra);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .fav-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .fav-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .fav-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--negro);
+        }
+
+        .producer-tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gris-texto);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+
+        .price {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--verde-agro);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        /* --- ACCIONES --- */
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .btn-view {
+            flex: 1;
+            background: var(--verde-agro);
+            color: var(--blanco);
+            text-decoration: none;
+            text-align: center;
+            padding: 12px;
+            font-weight: 700;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .btn-view:hover {
+            background: #05a85c;
+            box-shadow: 0 5px 15px rgba(6, 188, 103, 0.2);
+        }
+
+        .btn-remove {
+            width: 45px;
+            height: 45px;
+            background: #fff;
+            color: #ccc;
+            border: 1.5px solid #eee;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: #fff5f5;
+            color: var(--rojo-eliminar);
+            border-color: var(--rojo-eliminar);
+        }
+
+        /* ESTADO VACÍO */
+        .empty-favorites {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            background: var(--blanco);
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+        }
+
+        .empty-favorites h2 {
+            margin: 20px 0 10px;
+            color: var(--negro);
+        }
+
+        .empty-favorites p {
+            color: var(--gris-texto);
+            margin-bottom: 25px;
+        }
+
+        .btn-explore {
+            display: inline-block;
+            background: var(--verde-agro);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        footer {
+            margin-top: 60px;
+            background: var(--blanco);
+            padding: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--gris-texto);
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 26px; }
+            .favorites-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" height="30" alt="Logo">
+            AGRO<span>RED</span>
+        </a>
+        <div class="badge-fav">Mis Favoritos</div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="nav-header">
+            {% if origin == 'perfil' %}
+                <a href="{{ url_for('paginacliente') }}" class="btn-return">
+                    <span class="material-icons-round">dashboard</span> Volver al Panel
+                </a>
+            {% else %}
+                <a href="{{ url_for('index') }}" class="btn-return">
+                    <span class="material-icons-round">arrow_back</span> Volver a la Tienda
+                </a>
+            {% endif %}
+        </div>
+
+        <h1>Lista de Deseos</h1>
+
+        <div class="favorites-grid">
+            {% for fav in favoritos %}
+            <div class="fav-card">
+                <img src="{{ url_for('static', filename=fav.ruta_imagen) }}" alt="{{ fav.nombreproducto }}">
+                
+                <div class="producer-tag">
+                    <span class="material-icons-round" style="font-size: 16px;">agriculture</span>
+                    {{ fav.nombre_productor }}
+                </div>
+
+                <h3>{{ fav.nombreproducto }}</h3>
+                <span class="price">${{ "{:,.0f}".format(fav.precio) }} COP</span>
+
+                <div class="actions">
+                    <a href="{{ url_for('detalle_producto', id=fav.id) }}" class="btn-view">Ver Producto</a>
+                    <a href="{{ url_for('eliminar_favorito', producto_id=fav.id) }}" class="btn-remove" title="Quitar de favoritos">
+                        <span class="material-icons-round">favorite</span>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-favorites">
+                <span class="material-icons-round" style="font-size: 80px; color: #eee;">favorite_border</span>
+                <h2>Aún no tienes favoritos</h2>
+                <p>Explora nuestra tienda y guarda los productos que más te gusten.</p>
+                <a href="{{ url_for('index') }}" class="btn-explore">Explorar Cosechas</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <footer>
+        © 2026 AgroRed Colombia - Conectando el campo con tu hogar
+    </footer>
+
+</body>
+</html>

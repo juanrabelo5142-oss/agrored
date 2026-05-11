@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroRed | Bandeja de Entrada</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --negro: #000000;
+            --blanco: #ffffff;
+            --gris-fondo: #f4f4f7;
+            --gris-texto: #666666;
+            --radio: 12px;
+            /* Colores dinámicos para las sombras de los chats */
+            --amarillo-agro: #f9d71c;
+            --azul-agro: #2196f3;
+            --rojo-agro: #ff4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: var(--gris-fondo);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .contenedor-bandeja {
+            width: 100%;
+            max-width: 700px;
+            background: var(--blanco);
+            border-radius: var(--radio);
+            border: 2px solid var(--negro);
+            box-shadow: 10px 10px 0px var(--negro);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-bandeja {
+            background: var(--negro);
+            color: var(--blanco);
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-bandeja h1 {
+            font-weight: 800;
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-bandeja h1 span { color: var(--verde-agro); }
+
+        /* --- LISTA DE CHATS --- */
+        .lista-chats {
+            list-style: none;
+            background: var(--blanco);
+        }
+
+        .chat-item {
+            display: flex;
+            text-decoration: none;
+            color: var(--negro);
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        /* Efecto de hover con el color dinámico de AgroRed */
+        .chat-item:hover {
+            background: #fafafa;
+            padding-left: 35px;
+        }
+
+        /* Aplicar los colores de AgroRed a la izquierda de cada chat */
+        .chat-item:nth-child(4n+1) { border-left: 8px solid var(--verde-agro); }
+        .chat-item:nth-child(4n+2) { border-left: 8px solid var(--amarillo-agro); }
+        .chat-item:nth-child(4n+3) { border-left: 8px solid var(--azul-agro); }
+        .chat-item:nth-child(4n+4) { border-left: 8px solid var(--rojo-agro); }
+
+        .perfil-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            background: var(--negro);
+            color: var(--blanco);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            border: 2px solid var(--negro);
+        }
+
+        .texto-info strong {
+            display: block;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .texto-info span {
+            font-size: 0.9rem;
+            color: var(--gris-texto);
+            font-weight: 500;
+        }
+
+        .icon-next {
+            color: var(--negro);
+            opacity: 0.3;
+            transition: 0.3s;
+        }
+
+        .chat-item:hover .icon-next {
+            opacity: 1;
+            transform: translateX(5px);
+            color: var(--verde-agro);
+        }
+
+        /* --- ESTADO VACÍO --- */
+        .vacio-estado {
+            padding: 80px 40px;
+            text-align: center;
+            background: var(--blanco);
+        }
+
+        .vacio-estado .material-icons-round {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .vacio-estado p {
+            font-weight: 700;
+            color: var(--gris-texto);
+            text-transform: uppercase;
+        }
+
+        /* --- BOTÓN VOLVER --- */
+        .btn-volver {
+            padding: 20px;
+            background: #f8f9fa;
+            color: var(--negro);
+            text-align: center;
+            text-decoration: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            border-top: 2px solid var(--negro);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-volver:hover {
+            background: var(--verde-agro);
+            color: var(--blanco);
+        }
+
+        /* Scrollbar personalizado */
+        .lista-chats::-webkit-scrollbar { width: 8px; }
+        .lista-chats::-webkit-scrollbar-track { background: var(--gris-fondo); }
+        .lista-chats::-webkit-scrollbar-thumb { background: var(--negro); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-bandeja">
+        <header class="header-bandeja">
+            <h1>MIS <span>CHATS</span></h1>
+            <span class="material-icons-round" style="font-size: 1.8rem; color: var(--verde-agro);">forum</span>
+        </header>
+
+        <div class="lista-chats">
+            {% if chats %}
+                {% for chat in chats %}
+                    <a href="{{ url_for('chat', id_productor=chat.id) }}" class="chat-item">
+                        <div class="perfil-info">
+                            <div class="avatar">
+                                {{ chat.nombre[0] | upper }}
+                            </div>
+                            <div class="texto-info">
+                                <strong>{{ chat.nombre }}</strong>
+                                <span>{{ chat.ultimo_msj[:45] }}{{ '...' if chat.ultimo_msj|length > 45 }}</span>
+                            </div>
+                        </div>
+                        
+                        <span class="material-icons-round icon-next">arrow_forward_ios</span>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="vacio-estado">
+                    <span class="material-icons-round">shutter_speed</span>
+                    <p>Aún no tienes conversaciones activas</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('index') }}" class="btn-volver">
+            <span class="material-icons-round">west</span>
+            Volver al Mercado
+        </a>
+    </div>
+
+    <p style="margin-top: 30px; font-size: 11px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">
+        © 2026 REVOLUTION COMPUTING - AGRORED PREMIUM
+    </p>
+
+</body>
+</html>

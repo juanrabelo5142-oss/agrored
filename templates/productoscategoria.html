@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_categoria }} | AgroRed</title>
+
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --amarillo-agro: #f9d71c;
+            --azul-agro: #2d70ff;
+            --rojo-agro: #ff4747;
+            --negro: #000000;
+            --blanco: #ffffff;
+            --gris-fondo: #f4f7f6;
+            --gris-borde: #e0e0e0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background: var(--gris-fondo); 
+            color: var(--negro); 
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: var(--negro);
+            border-bottom: 3px solid var(--verde-agro);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo { font-size: 24px; font-weight: 900; text-decoration: none; color: var(--blanco); text-transform: uppercase; }
+        .logo span { color: var(--verde-agro); }
+
+        .btn-volver {
+            text-decoration: none;
+            color: var(--blanco);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            font-size: 11px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+
+        /* --- CABECERA --- */
+        .category-header {
+            padding: 40px 5%;
+            background: var(--blanco);
+            border-bottom: 1px solid var(--gris-borde);
+            text-align: center;
+        }
+
+        .category-header h1 { font-size: 38px; text-transform: uppercase; font-weight: 900; }
+
+        /* --- SECCIÓN POR PRODUCTOR --- */
+        .productor-section { margin-bottom: 50px; padding: 0 5%; }
+
+        .productor-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-top: 30px;
+        }
+
+        .productor-title h2 {
+            font-size: 16px;
+            text-transform: uppercase;
+            font-weight: 900;
+            padding: 10px 25px;
+            border-radius: 8px;
+            letter-spacing: 1px;
+        }
+
+        .line { height: 2px; background: var(--gris-borde); flex-grow: 1; }
+
+        /* --- GRID Y CARDS --- */
+        .product-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--blanco);
+            border: 1px solid var(--gris-borde);
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+        }
+
+        .card-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .card-info { padding: 20px; flex-grow: 1; text-align: center; }
+        .card-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: #333; }
+        .precio { font-size: 22px; font-weight: 900; color: var(--negro); display: block; margin-bottom: 15px; }
+
+        .btn-add {
+            width: 100%;
+            background: var(--negro);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        /* --- LÓGICA DE COLORES Y SOMBRAS DINÁMICAS --- */
+        
+        /* Fila Verde */
+        .fila-verde h2 { background: var(--verde-agro); color: var(--negro); }
+        .fila-verde .card:hover { 
+            border-color: var(--verde-agro);
+            box-shadow: 0 15px 30px rgba(6, 188, 103, 0.25);
+            transform: translateY(-8px);
+        }
+
+        /* Fila Amarilla */
+        .fila-amarilla h2 { background: var(--amarillo-agro); color: var(--negro); }
+        .fila-amarilla .card:hover { 
+            border-color: var(--amarillo-agro);
+            box-shadow: 0 15px 30px rgba(249, 215, 28, 0.4);
+            transform: translateY(-8px);
+        }
+
+        /* Fila Azul */
+        .fila-azul h2 { background: var(--azul-agro); color: var(--blanco); }
+        .fila-azul .card:hover { 
+            border-color: var(--azul-agro);
+            box-shadow: 0 15px 30px rgba(45, 112, 255, 0.25);
+            transform: translateY(-8px);
+        }
+
+        /* Fila Roja */
+        .fila-roja h2 { background: var(--rojo-agro); color: var(--blanco); }
+        .fila-roja .card:hover { 
+            border-color: var(--rojo-agro);
+            box-shadow: 0 15px 30px rgba(255, 71, 71, 0.25);
+            transform: translateY(-8px);
+        }
+
+        footer {
+            background: var(--negro);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 11px;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">AGRO<span>RED</span></a>
+        <a href="{{ url_for('index') }}" class="btn-volver">
+            <span class="material-icons-round">arrow_back</span> Regresar
+        </a>
+    </nav>
+
+    <header class="category-header">
+        <h1>{{ titulo_categoria }}</h1>
+    </header>
+
+    <main>
+        {% set lista_productores = [] %}
+        {% for p in productos %}
+            {% if p.nombre_productor not in lista_productores %}
+                {% if lista_productores.append(p.nombre_productor) %}{% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {% for productor in lista_productores %}
+            {% set color_class = "" %}
+            {% if loop.index % 4 == 1 %} {% set color_class = "fila-verde" %}
+            {% elif loop.index % 4 == 2 %} {% set color_class = "fila-amarilla" %}
+            {% elif loop.index % 4 == 3 %} {% set color_class = "fila-azul" %}
+            {% else %} {% set color_class = "fila-roja" %}
+            {% endif %}
+
+            <section class="productor-section {{ color_class }}">
+                <div class="productor-title">
+                    <h2>PRODUCTOR: {{ productor }}</h2>
+                    <div class="line"></div>
+                </div>
+
+                <div class="product-row">
+                    {% for prod in productos %}
+                        {% if prod.nombre_productor == productor %}
+                        <div class="card">
+                            <div class="card-img">
+                                <img src="{{ url_for('static', filename=prod.ruta_imagen) }}" alt="{{ prod.nombreproducto }}">
+                            </div>
+                            <div class="card-info">
+                                <h3>{{ prod.nombreproducto }}</h3>
+                                <span class="precio">${{ "{:,.0f}".format(prod.precio) }} <small style="font-size: 11px; opacity: 0.6;">COP</small></span>
+                                <a href="{{ url_for('agregar_al_carrito', id=prod.id) }}" class="btn-add">
+                                    <span class="material-icons-round">add_shopping_cart</span>
+                                    Comprar
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% else %}
+            <div style="text-align: center; padding: 100px;">
+                <h2 style="color: #ccc;">No hay productos disponibles.</h2>
+            </div>
+        {% endfor %}
+    </main>
+
+    <footer>
+        © 2026 AGRORED - CONECTANDO EL CAMPO
+    </footer>
+
+</body>
+</html>

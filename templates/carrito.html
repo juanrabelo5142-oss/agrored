@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Carrito | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --amarillo-agro: #f9d71c;
+            --negro: #1a1a1a;
+            --gris-texto: #555555;
+            --blanco: #ffffff;
+            --fondo: #f4f7f6;
+            --radio: 20px;
+            --sombra: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background: var(--fondo); 
+            color: var(--negro); 
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: var(--blanco);
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo { font-size: 24px; font-weight: 800; text-decoration: none; color: var(--negro); }
+        .logo span { color: var(--verde-agro); }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--gris-texto);
+            font-weight: 700;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .btn-back:hover { color: var(--verde-agro); }
+
+        /* --- CONTENEDOR CARRITO --- */
+        .cart-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            padding: 40px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            .cart-container { grid-template-columns: 1.5fr 0.7fr; }
+        }
+
+        h1 { 
+            font-size: 32px; 
+            font-weight: 800; 
+            margin-bottom: 10px; 
+            grid-column: 1 / -1;
+        }
+
+        /* --- LISTA DE PRODUCTOS --- */
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: var(--blanco);
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .cart-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+        }
+
+        .item-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: var(--fondo);
+            flex-shrink: 0;
+        }
+
+        .item-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        .item-details { flex-grow: 1; padding: 0 20px; }
+        .item-details p { font-size: 12px; color: var(--verde-agro); font-weight: 700; margin-bottom: 4px; }
+        .item-details h3 { font-size: 18px; font-weight: 800; color: var(--negro); }
+
+        /* Controles de Cantidad */
+        .item-qty {
+            display: flex;
+            align-items: center;
+            background: var(--fondo);
+            border-radius: 12px;
+            padding: 5px;
+        }
+
+        .item-qty a {
+            background: var(--blanco);
+            color: var(--negro);
+            text-decoration: none;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            font-weight: 800;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .item-qty a:hover { background: var(--verde-agro); color: white; }
+
+        .item-qty span {
+            width: 35px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .item-price {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 20px;
+            min-width: 110px;
+            text-align: right;
+        }
+
+        .remove-btn {
+            color: #ff4d4d;
+            text-decoration: none;
+            transition: 0.2s;
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .remove-btn:hover { background: #fff1f1; }
+
+        /* --- RESUMEN DE COMPRA --- */
+        .cart-summary {
+            background: var(--blanco);
+            padding: 30px;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .cart-summary h2 { 
+            font-size: 20px; 
+            font-weight: 800; 
+            margin-bottom: 25px; 
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--gris-texto);
+        }
+
+        .summary-total {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label { font-weight: 800; font-size: 16px; }
+        .total-value { font-size: 24px; font-weight: 800; color: var(--verde-agro); }
+
+        .btn-checkout {
+            display: flex;
+            width: 100%;
+            padding: 16px;
+            background: var(--verde-agro);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            margin-top: 25px;
+            font-weight: 700;
+            font-size: 16px;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(6, 188, 103, 0.2);
+        }
+
+        .btn-checkout:hover {
+            background: var(--negro);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        /* --- ESTADO VACÍO --- */
+        .empty-cart {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            background: var(--blanco);
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+        }
+
+        .empty-cart .material-icons-round { font-size: 80px; color: #eee; margin-bottom: 20px; }
+        .empty-cart h2 { font-weight: 800; margin-bottom: 10px; }
+        .empty-cart p { color: var(--gris-texto); margin-bottom: 30px; }
+
+        footer {
+            background: var(--blanco);
+            padding: 30px;
+            text-align: center;
+            margin-top: auto;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gris-texto);
+        }
+
+        @media (max-width: 768px) {
+            .cart-item { flex-wrap: wrap; gap: 15px; }
+            .item-details { width: 100%; padding: 10px 0; }
+            .item-price { margin-left: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">AGRO<span>RED</span></a>
+        <a href="{{ url_for('index') }}" class="btn-back">
+            <span class="material-icons-round">arrow_back</span> Seguir Comprando
+        </a>
+    </nav>
+
+    <main class="cart-container">
+        {% if items_carrito %}
+            <h1>Tu Carrito</h1>
+
+            <div class="cart-items">
+                {% for item in items_carrito %}
+                <div class="cart-item">
+                    <div class="item-img">
+                        <img src="{{ url_for('static', filename=item.ruta_imagen) }}" alt="{{ item.nombre }}">
+                    </div>
+                    <div class="item-details">
+                        <p>Producido por: {{ item.vendedor }}</p>
+                        <h3>{{ item.nombre }}</h3>
+                    </div>
+                    
+                    <div class="item-qty">
+                        <a href="{{ url_for('actualizar_carrito', id=item.carrito_id, accion='restar') }}"><span class="material-icons-round" style="font-size: 16px;">remove</span></a>
+                        <span>{{ item.cantidad }}</span>
+                        <a href="{{ url_for('actualizar_carrito', id=item.carrito_id, accion='sumar') }}"><span class="material-icons-round" style="font-size: 16px;">add</span></a>
+                    </div>
+
+                    <div class="item-price">
+                        ${{ "{:,.0f}".format(item.precio * item.cantidad) }}
+                    </div>
+                    
+                    <a href="{{ url_for('eliminar_del_carrito', id=item.carrito_id) }}" class="remove-btn" title="Eliminar">
+                        <span class="material-icons-round">delete_outline</span>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <aside class="cart-summary">
+                <h2>Resumen de pedido</h2>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>${{ "{:,.0f}".format(subtotal) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Envío</span>
+                    <span>${{ "{:,.0f}".format(envio) }}</span>
+                </div>
+                <div class="summary-row" style="color: var(--verde-agro);">
+                    <span>Descuento</span>
+                    <span>-$0</span>
+                </div>
+
+                <div class="summary-total">
+                    <span class="total-label">Total</span>
+                    <span class="total-value">${{ "{:,.0f}".format(subtotal + envio) }}</span>
+                </div>
+
+                <a href="{{ url_for('procesar_pago') }}" class="btn-checkout">
+                    Confirmar Pedido
+                    <span class="material-icons-round">arrow_forward</span>
+                </a>
+
+                <div style="display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 20px; color: #aaa; font-size: 12px; font-weight: 600;">
+                    <span class="material-icons-round" style="font-size: 16px;">verified_user</span>
+                    Compra Segura
+                </div>
+            </aside>
+        {% else %}
+            <div class="empty-cart">
+                <span class="material-icons-round">shopping_basket</span>
+                <h2>Tu carrito está vacío</h2>
+                <p>Parece que aún no has añadido productos frescos de nuestros agricultores.</p>
+                <a href="{{ url_for('index') }}" class="btn-checkout" style="display: inline-flex; width: auto; padding: 15px 40px;">
+                    Ver Productos
+                </a>
+            </div>
+        {% endif %}
+    </main>
+
+    <footer>
+        © 2026 AgroRed - De la mano con el agricultor colombiano
+    </footer>
+
+</body>
+</html>

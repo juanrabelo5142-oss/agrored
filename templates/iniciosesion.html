@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --negro: #1a1a1a;
+            --gris-texto: #555555;
+            --blanco: #ffffff;
+            --fondo: #f4f7f6;
+            --sombra: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            background-color: var(--fondo);
+            color: var(--negro);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            display: flex;
+            width: 90%;
+            max-width: 1000px;
+            height: 600px;
+            background: var(--blanco);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: var(--sombra);
+        }
+
+        /* --- SECCIÓN IZQUIERDA (IMAGEN) --- */
+        .login-side-image {
+            flex: 1;
+            position: relative;
+            background: var(--negro);
+            display: none;
+        }
+
+        .login-side-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+        }
+
+        .image-content {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            right: 40px;
+            color: white;
+            z-index: 2;
+        }
+
+        .image-content h2 {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 10px;
+        }
+
+        .image-content h2 span { color: var(--verde-agro); }
+
+        .image-content p {
+            font-size: 14px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        /* --- SECCIÓN DERECHA (FORMULARIO) --- */
+        .login-form-side {
+            flex: 1;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logo-login {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            text-decoration: none;
+            color: var(--negro);
+        }
+        .logo-login span { color: var(--verde-agro); }
+
+        .login-form-side h3 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--gris-texto);
+            font-size: 14px;
+            margin-bottom: 35px;
+        }
+
+        /* --- INPUTS --- */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--negro);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            background: #fafafa;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--verde-agro);
+            background: var(--blanco);
+            box-shadow: 0 0 0 4px var(--verde-suave);
+        }
+
+        /* --- BOTÓN --- */
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: var(--verde-agro);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(6, 188, 103, 0.2);
+        }
+
+        .btn-login:hover {
+            background: #05a85c;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(6, 188, 103, 0.3);
+        }
+
+        /* --- ENLACES --- */
+        .footer-links {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .footer-links a {
+            display: block;
+            text-decoration: none;
+            color: var(--gris-texto);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            transition: 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--verde-agro); }
+
+        .btn-register-link {
+            color: var(--verde-agro) !important;
+            font-weight: 700 !important;
+        }
+
+        /* --- ERRORES --- */
+        .flash-error {
+            background: #fff5f5;
+            color: #ff4d4d;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #ffebeb;
+        }
+
+        @media (min-width: 900px) {
+            .login-side-image { display: block; }
+        }
+
+        @media (max-width: 600px) {
+            .login-container { height: auto; border-radius: 0; width: 100%; height: 100%; }
+            .login-form-side { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        
+        <div class="login-side-image">
+            <img src="https://images.pexels.com/photos/2132180/pexels-photo-2132180.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Campo Agro">
+            <div class="image-content">
+                <h2>Únete a la<br><span>revolución</span><br>del campo</h2>
+                <p>Conectamos directamente a los productores locales con la ciudad.</p>
+            </div>
+        </div>
+
+        <div class="login-form-side">
+            
+            <a href="{{ url_for('index') }}" class="logo-login">
+                AGRO<span>RED</span>
+            </a>
+            
+            <h3>¡Hola de nuevo!</h3>
+            <p class="subtitle">Ingresa tus datos para continuar.</p>
+
+            {% with messages = get_flashed_messages(category_filter=["error"]) %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="flash-error">
+                    <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">error_outline</span>
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST">
+                <div class="input-group">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" placeholder="nombre@correo.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="pass">Contraseña</label>
+                    <input type="password" id="pass" name="contrasena" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    Iniciar Sesión
+                    <span class="material-icons-round">east</span>
+                </button>
+            </form>
+
+            <div class="footer-links">
+                <a href="#">¿Olvidaste tu contraseña?</a>
+                <a href="{{ url_for('registrarse') }}" class="btn-register-link">¿No tienes cuenta? Regístrate</a>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                <a href="{{ url_for('index') }}" style="display: inline-flex; align-items: center; gap: 5px;">
+                    <span class="material-icons-round" style="font-size: 16px;">arrow_back</span>
+                    Volver a la tienda
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

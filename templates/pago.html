@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pago | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --verde-suave: #e8f7ee;
+            --amarillo-agro: #f9d71c;
+            --negro: #1a1a1a;
+            --blanco: #ffffff;
+            --gris-texto: #555555;
+            --fondo: #f4f7f6;
+            --radio: 20px;
+            --sombra: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Public Sans', sans-serif; background: var(--fondo); color: var(--negro); }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            padding: 20px 5%;
+            background: var(--blanco);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        .logo { font-size: 24px; font-weight: 800; text-decoration: none; color: var(--negro); }
+        .logo span { color: var(--verde-agro); }
+
+        .btn-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--gris-texto);
+            font-weight: 700;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .btn-back-link:hover { color: var(--verde-agro); }
+
+        /* --- LAYOUT --- */
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 40px;
+            max-width: 1300px;
+            margin: 40px auto;
+            padding: 0 5%;
+        }
+
+        .checkout-card {
+            background: var(--blanco);
+            padding: 40px;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+        }
+
+        h2 { font-size: 22px; font-weight: 800; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; }
+        h2 span { 
+            background: var(--verde-suave); 
+            color: var(--verde-agro); 
+            width: 35px; 
+            height: 35px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .form-section { margin-bottom: 40px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-weight: 700; font-size: 13px; margin-bottom: 8px; color: var(--gris-texto); }
+        .input-group input {
+            padding: 14px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            font-family: 'Public Sans';
+            font-weight: 600;
+            background: #fafafa;
+            transition: 0.3s;
+        }
+        .input-group input:focus { 
+            outline: none; 
+            border-color: var(--verde-agro); 
+            background: white; 
+            box-shadow: 0 0 0 4px var(--verde-suave); 
+        }
+
+        /* MÉTODOS DE PAGO */
+        .payment-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .method-card {
+            border: 2px solid #eee;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .method-card span { font-size: 32px; color: var(--gris-texto); }
+        .method-card:hover { border-color: var(--verde-agro); background: var(--verde-suave); }
+        .method-card.active { 
+            border-color: var(--verde-agro); 
+            background: var(--verde-agro); 
+            color: white;
+        }
+        .method-card.active span { color: white; }
+
+        /* RESUMEN DERECHA */
+        .order-summary { position: sticky; top: 120px; height: fit-content; }
+        .summary-card { background: var(--negro); color: white; border-radius: var(--radio); padding: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .summary-card h3 { font-weight: 800; font-size: 20px; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+
+        .item-mini { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 600; font-size: 14px; }
+        .item-mini span:last-child { color: var(--amarillo-agro); }
+        
+        .total-pay {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .total-pay .label { font-size: 14px; font-weight: 600; opacity: 0.7; }
+        .total-pay .amount { font-size: 32px; font-weight: 800; color: var(--amarillo-agro); }
+
+        .btn-confirm {
+            width: 100%;
+            padding: 20px;
+            background: var(--verde-agro);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 16px;
+            margin-top: 35px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 20px rgba(6, 188, 103, 0.2);
+        }
+        .btn-confirm:hover { background: #05a65b; transform: translateY(-3px); }
+
+        .secure-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 25px;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--gris-texto);
+        }
+
+        @media (max-width: 1000px) {
+            .checkout-container { grid-template-columns: 1fr; margin-top: 20px; }
+            .order-summary { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">AGRO<span>RED</span></a>
+        
+        <a href="{{ url_for('ver_carrito') }}" class="btn-back-link">
+            <span class="material-icons-round">arrow_back</span> Volver al carrito
+        </a>
+    </nav>
+
+    <main class="checkout-container">
+        
+        <section class="checkout-card">
+            <form id="form-pago" action="{{ url_for('index') }}" method="POST">
+                
+                <div class="form-section">
+                    <h2><span>1</span> DATOS DE ENVÍO</h2>
+                    <div class="grid-inputs">
+                        <div class="input-group full-width">
+                            <label>Dirección Exacta</label>
+                            <input type="text" name="direccion" placeholder="Ej: Calle 100 # 15 - 20, Apto 502" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Barrio / Sector</label>
+                            <input type="text" name="barrio" placeholder="Ej: Chapinero" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Instrucciones Adicionales</label>
+                            <input type="text" name="notas" placeholder="Ej: Dejar en portería">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2><span>2</span> MÉTODO DE PAGO</h2>
+                    <input type="hidden" name="metodo_pago" id="metodo_pago_input" value="Tarjeta">
+
+                    <div class="payment-methods">
+                        <div class="method-card active" onclick="seleccionarMetodo(this, 'Tarjeta')">
+                            <span class="material-icons-round">credit_card</span>
+                            Tarjeta
+                        </div>
+                        <div class="method-card" onclick="seleccionarMetodo(this, 'PSE')">
+                            <span class="material-icons-round">account_balance</span>
+                            PSE
+                        </div>
+                        <div class="method-card" onclick="seleccionarMetodo(this, 'Efectivo')">
+                            <span class="material-icons-round">payments</span>
+                            Efectivo
+                        </div>
+                    </div>
+
+                    <div id="campos-tarjeta" class="grid-inputs" style="margin-top: 30px;">
+                        <div class="input-group full-width">
+                            <label>Número de Tarjeta</label>
+                            <input type="text" name="n_tarjeta" placeholder="0000 0000 0000 0000">
+                        </div>
+                        <div class="input-group">
+                            <label>Vencimiento</label>
+                            <input type="text" name="vencimiento" placeholder="MM/AA">
+                        </div>
+                        <div class="input-group">
+                            <label>CVV</label>
+                            <input type="password" name="cvv" placeholder="123">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <aside class="order-summary">
+            <div class="summary-card">
+                <h3>Resumen del Pedido</h3>
+                
+                {% for item in items_pago %}
+                <div class="item-mini">
+                    <span>{{ item.cantidad }}x {{ item.nombreproducto }}</span>
+                    <span>${{ "{:,.0f}".format(item.precio * item.cantidad) }}</span>
+                </div>
+                {% endfor %}
+
+                <div class="item-mini" style="opacity: 0.6; margin-top: 15px;">
+                    <span>Envío a domicilio</span>
+                    <span>${{ "{:,.0f}".format(envio) }}</span>
+                </div>
+
+                <div class="total-pay">
+                    <span class="label">TOTAL A PAGAR</span>
+                    <span class="amount">${{ "{:,.0f}".format(total) }}</span>
+                </div>
+
+                <button type="submit" form="form-pago" class="btn-confirm">
+                    CONFIRMAR COMPRA
+                    <span class="material-icons-round">verified</span>
+                </button>
+            </div>
+
+            <div class="secure-note">
+                <span class="material-icons-round" style="color: var(--verde-agro);">lock</span>
+                PAGO 100% ENCRIPTADO Y SEGURO
+            </div>
+        </aside>
+
+    </main>
+
+    <footer style="padding: 40px; text-align: center; color: var(--gris-texto); font-size: 14px; font-weight: 600;">
+        <p>© 2026 AGRORED - APOYO AL PRODUCTOR LOCAL</p>
+    </footer>
+
+    <script>
+        function seleccionarMetodo(elemento, metodo) {
+            const tarjetas = document.querySelectorAll('.method-card');
+            tarjetas.forEach(t => t.classList.remove('active'));
+            elemento.classList.add('active');
+            document.getElementById('metodo_pago_input').value = metodo;
+
+            const camposTarjeta = document.getElementById('campos-tarjeta');
+            if (metodo === 'Tarjeta') {
+                camposTarjeta.style.display = 'grid';
+            } else {
+                camposTarjeta.style.display = 'none';
+            }
+        }
+    </script>
+
+</body>
+</html>

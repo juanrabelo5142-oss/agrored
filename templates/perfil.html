@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil Completo | AgroRed</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --amarillo-agro: #f9d71c;
+            --negro: #000000;
+            --blanco: #ffffff;
+            --gris-fondo: #f4f7f6;
+            --gris-bloqueado: #e9ecef;
+            --borde-suave: #dee2e6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Public Sans', sans-serif; 
+            margin: 0; 
+            background: var(--gris-fondo); 
+            color: var(--negro); 
+        }
+
+        .main-wrapper { display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 280px; 
+            background: var(--negro); 
+            color: white;
+            padding: 40px 20px; 
+            display: flex; 
+            flex-direction: column;
+            position: sticky; 
+            top: 0; 
+            height: 100vh;
+            border-right: 4px solid var(--verde-agro);
+        }
+
+        .sidebar h2 { 
+            font-weight: 900; 
+            font-size: 26px; 
+            margin-bottom: 40px; 
+            text-transform: uppercase; 
+            letter-spacing: -1px;
+        }
+        .sidebar h2 span { color: var(--verde-agro); }
+        
+        .menu-item {
+            color: rgba(255,255,255,0.7); 
+            text-decoration: none; 
+            padding: 14px 18px;
+            font-weight: 700; 
+            text-transform: uppercase; 
+            font-size: 12px;
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            transition: 0.3s;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .menu-item:hover, .menu-item.active { 
+            background: var(--verde-agro); 
+            color: var(--negro); 
+        }
+
+        .btn-sidebar-panel {
+            background: var(--amarillo-agro); 
+            color: var(--negro) !important;
+            margin-bottom: 30px; 
+            font-weight: 800;
+        }
+
+        .btn-logout {
+            color: #ff4747 !important;
+            margin-top: auto;
+            border: 1px solid rgba(255,71,71,0.2);
+        }
+
+        .btn-logout:hover {
+            background: #ff4747 !important;
+            color: white !important;
+        }
+
+        /* --- CONTENIDO --- */
+        .content { flex: 1; padding: 60px 6%; }
+
+        .header-perfil { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 40px; 
+            border-bottom: 2px solid var(--borde-suave);
+            padding-bottom: 30px;
+        }
+
+        .header-perfil h1 { 
+            font-size: 36px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+        }
+
+        /* --- TARJETA DE PERFIL --- */
+        .profile-card {
+            background: var(--blanco); 
+            border-radius: 16px;
+            padding: 40px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--borde-suave);
+            margin-bottom: 50px;
+        }
+
+        h3.section-title {
+            text-transform: uppercase; 
+            font-size: 13px; 
+            color: var(--verde-agro);
+            letter-spacing: 1px;
+            margin: 35px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h3.section-title::after {
+            content: "";
+            height: 1px;
+            background: var(--borde-suave);
+            flex-grow: 1;
+        }
+
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .full-width { grid-column: span 2; }
+
+        .form-group { margin-bottom: 15px; }
+        
+        label {
+            display: block; 
+            font-weight: 800; 
+            text-transform: uppercase;
+            font-size: 11px; 
+            color: var(--negro); 
+            margin-bottom: 8px;
+            opacity: 0.6;
+        }
+
+        input {
+            width: 100%; 
+            padding: 14px; 
+            font-family: 'Public Sans', sans-serif;
+            font-weight: 600; 
+            border: 1.5px solid var(--borde-suave);
+            background: #fff; 
+            outline: none; 
+            border-radius: 8px;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        input:focus { border-color: var(--verde-agro); background: #f0fdf4; }
+
+        input[readonly] { 
+            background: var(--gris-bloqueado); 
+            color: #6c757d; 
+            cursor: not-allowed; 
+            border-style: dashed;
+        }
+
+        .btn-save {
+            width: 100%; 
+            background: var(--negro); 
+            color: white;
+            border: none; 
+            padding: 20px; 
+            font-weight: 800;
+            text-transform: uppercase; 
+            cursor: pointer; 
+            transition: 0.3s;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+            margin-top: 40px; 
+            font-size: 14px;
+            border-radius: 12px;
+            letter-spacing: 1px;
+        }
+        .btn-save:hover { 
+            background: var(--verde-agro); 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(6, 188, 103, 0.2);
+        }
+
+        /* --- ALERTAS --- */
+        .alert {
+            padding: 18px 25px; 
+            background: var(--verde-agro); 
+            color: var(--negro); 
+            font-weight: 800; 
+            border-radius: 12px;
+            margin-bottom: 30px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
+            text-transform: uppercase;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 80px; padding: 20px 10px; }
+            .sidebar h2, .menu-item span:not(.material-icons-round) { display: none; }
+            .content { padding: 40px 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <nav class="sidebar">
+            <h2>AGRO<span>RED</span></h2>
+            
+            <a href="{{ url_for('paginaproductor' if usuario.rol == 'productor' else 'paginacliente') }}" class="menu-item btn-sidebar-panel">
+                <span class="material-icons-round">dashboard</span> 
+                <span>Panel Principal</span>
+            </a>
+
+            <a href="{{ url_for('perfil') }}" class="menu-item active">
+                <span class="material-icons-round">account_circle</span> 
+                <span>Mi Perfil</span>
+            </a>
+
+            <div style="margin-top: auto;">
+                <a href="{{ url_for('logout') }}" class="menu-item btn-logout">
+                    <span class="material-icons-round">logout</span> 
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="content">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="alert">
+                    <span class="material-icons-round">check_circle</span>
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <header class="header-perfil">
+                <div>
+                    <p style="font-weight: 800; color: var(--verde-agro); text-transform: uppercase; font-size: 11px; letter-spacing: 2px; margin-bottom: 5px;">Configuración de cuenta</p>
+                    <h1>Hola, {{ usuario.nombre.split(' ')[0] }} <br>Gestiona tu información</h1>
+                </div>
+                <div class="material-icons-round" style="font-size: 60px; color: var(--amarillo-agro); background: #fff; padding: 15px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">manage_accounts</div>
+            </header>
+
+            <section class="profile-card">
+                <form action="{{ url_for('actualizar_perfil') }}" method="POST">
+                    
+                    <h3 class="section-title" style="margin-top: 0;">1. Identidad de Usuario</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Rol en la plataforma</label>
+                            <input type="text" value="{{ usuario.rol.upper() }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Documento</label>
+                            <input type="text" value="{{ usuario.tipo_documento }}" readonly>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Número de Identificación</label>
+                            <input type="text" value="{{ usuario.numero_documento }}" readonly>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">2. Datos Personales y Contacto</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Nombre Completo</label>
+                            <input type="text" name="nombre" value="{{ usuario.nombre }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" name="email" value="{{ usuario.email }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono de Contacto</label>
+                            <input type="tel" name="telefono" value="{{ usuario.telefono }}" required>
+                        </div>
+                    </div>
+
+                    {% if usuario.rol == 'productor' %}
+                    <h3 class="section-title">3. Información de Negocio</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Nombre de la Finca / Empresa</label>
+                            <input type="text" name="nombre_finca" value="{{ usuario.nombre_finca }}" placeholder="Ej: Finca La Esperanza">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <h3 class="section-title">4. Ubicación Geográfica</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Dirección de Residencia/Despacho</label>
+                            <input type="text" name="direccion" value="{{ usuario.direccion }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento</label>
+                            <input type="text" name="departamento" value="{{ usuario.departamento }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Municipio</label>
+                            <input type="text" name="municipio" value="{{ usuario.municipio }}" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Código Postal</label>
+                            <input type="text" name="codigo_postal" value="{{ usuario.codigo_postal }}" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-save">
+                        <span class="material-icons-round">save</span>
+                        Actualizar datos 
+                    </button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+<script>
+    // Auto-ocultar alertas flash
+    setTimeout(function() {
+        let alert = document.querySelector('.alert');
+        if(alert) {
+            alert.style.transition = "opacity 0.6s ease";
+            alert.style.opacity = "0";
+            setTimeout(() => alert.remove(), 600);
+        }
+    }, 4000);
+</script>
+
+</body>
+</html>

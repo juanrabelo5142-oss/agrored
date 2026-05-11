@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroRed | Mercado Hortofrutícola Premium</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --verde-agro: #06bc67;
+            --amarillo-agro: #fff4bd;
+            --azul-agro: #2196f3;
+            --rojo-agro: #ff4444;
+            --negro: #000000;
+            --blanco: #ffffff;
+            --gris-fondo: #f4f4f7;
+            --gris-texto: #666666;
+            --sombra-suave: 0 4px 15px rgba(0,0,0,0.08);
+            --radio: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Public Sans', sans-serif; background: var(--gris-fondo); color: var(--negro); overflow-x: hidden; }
+
+        /* --- BARRA SUPERIOR --- */
+        .top-bar {
+            background: var(--verde-agro);
+            color: white;
+            padding: 8px 5%;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: var(--blanco);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            flex-wrap: wrap; /* Permite que los elementos bajen en móviles */
+        }
+
+        .brand-container { display: flex; align-items: center; text-decoration: none; }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: -1px; text-transform: uppercase; color: var(--negro); margin-left: 10px; }
+        .logo span { color: var(--verde-agro); }
+
+        .nav-links { display: flex; align-items: center; gap: 20px; }
+        .nav-links a, .dropbtn { 
+            text-decoration: none; 
+            color: var(--negro); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 13px; 
+            cursor: pointer; 
+            background: none;
+            border: none;
+            font-family: 'Public Sans', sans-serif;
+            transition: 0.3s;
+        }
+        .nav-links a:hover { color: var(--verde-agro); }
+
+        .dropdown { position: relative; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: var(--blanco);
+            min-width: 200px;
+            border-radius: 8px;
+            top: 130%;
+            left: 0;
+            box-shadow: var(--sombra-suave);
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+        .dropdown-content a { padding: 12px 15px; display: block; font-size: 12px; border-bottom: 1px solid #f9f9f9; }
+        .dropdown-content a:hover { background: var(--gris-fondo); color: var(--verde-agro); }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+
+        .search-container { 
+            background: #f0f0f2;
+            border-radius: 50px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            width: 250px;
+            transition: 0.3s;
+        }
+        .search-container input { border: none; background: transparent; margin-left: 8px; outline: none; width: 100%; font-size: 13px; }
+
+        .nav-icons { display: flex; gap: 15px; align-items: center; }
+        .nav-icons span, .nav-icons a { font-size: 22px; cursor: pointer; color: var(--negro); text-decoration: none; transition: 0.2s; }
+        .nav-icons a:hover { color: var(--verde-agro); }
+
+        .auth-buttons { display: flex; gap: 10px; }
+        .btn-auth { padding: 10px 18px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 12px; transition: 0.3s; white-space: nowrap; }
+        .btn-login { color: var(--negro); border: 1px solid #ddd; }
+        .btn-register { background: var(--verde-agro); color: white; }
+
+        /* --- HERO --- */
+        .hero { 
+            height: 400px; 
+            background: var(--amarillo-agro); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 20px 5%;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .hero img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; }
+        .hero-text { position: relative; z-index: 2; text-align: center; padding: 0 20px; }
+        .hero-text h1 { font-size: clamp(30px, 8vw, 50px); font-weight: 800; color: var(--negro); line-height: 1.1; }
+        .hero-text h1 span { color: var(--verde-agro); }
+        .hero-text p { font-weight: 600; color: var(--negro); margin-top: 10px; letter-spacing: 2px; font-size: clamp(10px, 3vw, 14px); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { padding: 40px 5%; }
+        
+        .section-title { 
+            font-size: 1.4rem; 
+            margin-bottom: 25px; 
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::before {
+            content: '';
+            width: 6px;
+            height: 35px;
+            background: var(--row-color);
+            border-radius: 10px;
+        }
+
+        .scroll-container { position: relative; }
+        .product-scroll { 
+            display: flex; 
+            gap: 20px; 
+            overflow-x: auto; 
+            padding: 10px 5px 25px 5px; 
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .product-scroll::-webkit-scrollbar { display: none; }
+
+        .card { 
+            min-width: 260px; 
+            max-width: 260px;
+            background: var(--blanco); 
+            border-radius: var(--radio); 
+            overflow: hidden; 
+            box-shadow: 6px 6px 0px var(--row-color);
+            border: 1px solid var(--negro);
+            transition: 0.3s;
+        }
+        .card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0px var(--row-color); }
+        
+        .card-img { height: 220px; background: #f9f9f9; overflow: hidden; border-bottom: 1px solid #eee; }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-body { padding: 15px; }
+        .card-body h4 { font-size: 15px; margin-bottom: 8px; color: var(--negro); text-transform: uppercase; }
+        .precio { font-size: 20px; font-weight: 800; color: var(--negro); }
+
+        .card-actions { display: flex; gap: 8px; margin-top: 15px; }
+        .btn-add { 
+            flex: 1; 
+            background: var(--negro); 
+            color: white; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-add:hover { background: var(--verde-agro); }
+        
+        .btn-fav { 
+            width: 40px; border: 1px solid #eee; background: white; border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center; color: #ccc; text-decoration: none;
+        }
+        .btn-fav.is-favorite { color: #ff4444; }
+
+        .btn-nav-scroll {
+            position: absolute;
+            top: 40%;
+            background: var(--blanco);
+            border: 1px solid var(--negro);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-left { left: -15px; }
+        .btn-right { right: -15px; }
+
+        footer { background: var(--negro); color: white; padding: 40px 5%; text-align: center; }
+
+        /* --- AJUSTES RESPONSIVE (MEDIA QUERIES) --- */
+        @media (max-width: 1024px) {
+            .search-container { width: 200px; }
+            .nav-links { gap: 10px; }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 10px 5%; gap: 10px; }
+            .nav-links { display: none; } /* Ocultamos links de texto en móvil */
+            .search-container { order: 3; width: 100%; margin-top: 10px; } /* Buscador abajo al centro */
+            .hero { height: 250px; margin: 10px 5%; }
+            .btn-nav-scroll { display: none; } /* Ocultamos flechas (mejor usar scroll táctil) */
+            .card { min-width: 220px; }
+            .top-bar span:last-child { display: none; } /* Ocultamos ubicación para ahorrar espacio */
+        }
+
+        @media (max-width: 480px) {
+            .auth-buttons .btn-auth { padding: 8px 12px; font-size: 10px; }
+            .logo { font-size: 20px; }
+            .section-title h2 { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <span>📦 Envíos directos desde el campo</span>
+        <span>📍 Bogotá, Colombia</span>
+    </div>
+
+    <nav>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="{{ url_for('index') }}" class="brand-container">
+                <img src="{{ url_for('static', filename='img/logo1.png') }}" height="30">
+                <div class="logo">AGRO<span>RED</span></div>
+            </a>
+
+            <div class="nav-links">
+                <div class="dropdown">
+                    <button class="dropbtn">Categorías <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">expand_more</span></button>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('mostrar_categoria', cat_slug='verduras') }}">Verduras</a>
+                        <a href="{{ url_for('mostrar_categoria', cat_slug='frutas') }}">Frutas</a>
+                        <a href="{{ url_for('mostrar_categoria', cat_slug='granos') }}">Granos</a>
+                    </div>
+                </div>
+                <a href="{{ url_for('bandeja') }}">Mensajes</a>
+                <a href="{{ url_for('feedback') }}">Comentarios</a>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <form action="{{ url_for('index') }}" method="GET" class="search-container">
+                <span class="material-icons-round" style="color: var(--gris-texto); font-size: 20px;">search</span>
+                <input type="text" name="q" placeholder="¿Qué buscas?" value="{{ busqueda if busqueda else '' }}">
+            </form>
+            
+            <div class="nav-icons">
+                {% if session.get('email') %}
+                    <a href="{{ url_for('ver_favoritos') }}" class="material-icons-round">favorite_border</a>
+                    <a href="{{ url_for('ver_carrito') }}" class="material-icons-round">shopping_cart</a>
+                {% else %}
+                    <span class="material-icons-round" onclick="alertaFavoritos()">favorite_border</span>
+                    <span class="material-icons-round" onclick="alertaSesion()">shopping_cart</span>
+                {% endif %}
+            </div>
+
+            <div class="auth-buttons">
+                {% if session.get('email') %}
+                    {% if session.get('rol') == 'administrador' %}
+                        <a href="{{ url_for('paginaadministrador') }}" class="btn-auth btn-login">PANEL</a>
+                    {% elif session.get('rol') == 'cliente' %}
+                        <a href="{{ url_for('paginacliente') }}" class="btn-auth btn-login">MI CUENTA</a>
+                    {% else %}
+                        <a href="{{ url_for('paginaproductor') }}" class="btn-auth btn-login">MI FINCA</a>
+                    {% endif %}
+                    <a href="#" onclick="confirmarLogout()" class="material-icons-round" style="color: #ff4444; text-decoration: none; margin-left: 5px;">logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-auth btn-login">INGRESAR</a>
+                    <a href="{{ url_for('registrarse') }}" class="btn-auth btn-register">REGISTRAR</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <img src="https://images.pexels.com/photos/1458694/pexels-photo-1458694.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Cosecha">
+        <div class="hero-text">
+            <h1>COSECHA <span>FRESCA</span></h1>
+            <p>DEL CAMPO A TU MESA SIN INTERMEDIARIOS</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% if busqueda %}
+        <div style="margin-bottom: 30px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <h3 style="font-weight: 600;">Resultados para: <span style="color: var(--verde-agro);">"{{ busqueda }}"</span></h3>
+            <a href="{{ url_for('index') }}" style="font-size: 11px; color: #ff4444; font-weight: 700; text-decoration: none; border: 1px solid #ff4444; padding: 4px 10px; border-radius: 50px;">LIMPIAR</a>
+        </div>
+        {% endif %}
+
+        {% if productores %}
+            {% for nombre_productor, lista_productos in productores.items() %}
+                
+                {% set color_idx = loop.index0 % 4 %}
+                {% if color_idx == 0 %}{% set row_color = '#06bc67' %}
+                {% elif color_idx == 1 %}{% set row_color = '#f9d71c' %}
+                {% elif color_idx == 2 %}{% set row_color = '#2196f3' %}
+                {% else %}{% set row_color = '#ff4444' %}
+                {% endif %}
+
+                <section style="margin-bottom: 60px; --row-color: {{ row_color }};">
+                    <div class="section-title">
+                        <div>
+                            <h2 style="font-size: clamp(1rem, 4vw, 1.3rem); text-transform: uppercase;">{{ lista_productos[0].nombre_finca if lista_productos[0].nombre_finca else 'Cosecha AgroRed' }}</h2>
+                            <p style="font-size: 11px; color: var(--gris-texto); font-weight: 400;">Producido por: {{ nombre_productor }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="scroll-container">
+                        <button class="btn-nav-scroll btn-left" onclick="scrollRow(this, -1)">
+                            <span class="material-icons-round">chevron_left</span>
+                        </button>
+
+                        <div class="product-scroll">
+                            {% for prod in lista_productos %}
+                            <div class="card">
+                                <a href="{{ url_for('detalle_producto', id=prod.id) }}">
+                                    <div class="card-img">
+                                        <img src="{{ url_for('static', filename=prod.ruta_imagen) }}">
+                                    </div>
+                                </a>
+                                <div class="card-body">
+                                    <h4>{{ prod.nombreproducto }}</h4>
+                                    <p class="precio">${{ "{:,.0f}".format(prod.precio) }}</p>
+                                    
+                                    <div class="card-actions">
+                                        {% if session.get('email') %}
+                                            <form action="{{ url_for('agregar_al_carrito', id=prod.id) }}" method="POST" style="flex: 1;">
+                                                <input type="hidden" name="cantidad" value="1">
+                                                <button type="submit" class="btn-add">AÑADIR</button>
+                                            </form>
+                                            <a href="{{ url_for('toggle_favorito', id=prod.id) }}" class="btn-fav {% if prod.es_favorito %}is-favorite{% endif %}">
+                                                <span class="material-icons-round">{% if prod.es_favorito %}favorite{% else %}favorite_border{% endif %}</span>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('detalle_producto', id=prod.id) }}" class="btn-add" style="text-decoration: none; text-align: center; display: block; line-height: 20px;">VER MÁS</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <button class="btn-nav-scroll btn-right" onclick="scrollRow(this, 1)">
+                            <span class="material-icons-round">chevron_right</span>
+                        </button>
+                    </div>
+                </section>
+            {% endfor %}
+        {% endif %}
+    </main>
+
+    <footer>
+        <div class="logo" style="color: white; margin-bottom: 10px;">AGRO<span>RED</span></div>
+        <p style="font-size: 11px; opacity: 0.7;">© 2026 AGRORED COLOMBIA - REVOLUTION COMPUTING</p>
+    </footer>
+
+    <script>
+        function scrollRow(btn, direction) {
+            const container = btn.parentElement.querySelector('.product-scroll');
+            container.scrollBy({ left: direction * 280, behavior: 'smooth' });
+        }
+        function alertaSesion() { alert("Inicia sesión para comprar."); window.location.href = "{{ url_for('login') }}"; }
+        function alertaFavoritos() { alert("Inicia sesión para guardar favoritos."); window.location.href = "{{ url_for('login') }}"; }
+        function confirmarLogout() { if (confirm("¿Seguro que quieres cerrar sesión?")) window.location.href = "{{ url_for('logout') }}"; }
+    </script>
+</body>
+</html>
