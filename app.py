@@ -15,16 +15,6 @@ UPLOAD_FOLDER = os.path.join('static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
-
-def get_db_connection():
-    database_url = os.environ.get('DATABASE_URL')
-    
-    if database_url and database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
-
-    conn = psycopg2.connect(database_url)
-    return conn
-
 CATEGORIA_TITULOS = {
     'verduras': 'Verduras Frescas',
     'granos': 'Granos y Cereales',
@@ -33,20 +23,22 @@ CATEGORIA_TITULOS = {
 
 # ----------------- Funciones de Utilidad -----------------
 
-db_config = {
-    "host": "dpg-d80u42v7f7vs73d7msng-a",
-    "database": "agrored_db",
-    "user": "agrored_db_user",
-    "password": "HyXzP8BZZBv8jbPZ8TSX7UWapKByftFo",
-    "port": "5432"
-}
-
 def get_db_connection():
     try:
-        conn = psycopg2.connect(**db_config)
+        database_url = os.environ.get('DATABASE_URL')
+
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace(
+                "postgres://",
+                "postgresql://",
+                1
+            )
+
+        conn = psycopg2.connect(database_url)
         return conn
-    except psycopg2.Error as err:
-        print(f'Error de conexión: {err}')
+
+    except Exception as err:
+        print(f"Error PostgreSQL: {err}")
         return None
     
 def login_required(f):  # <-- AQUÍ: Debes agregar (f)
@@ -76,7 +68,7 @@ def paginaadministrador():
     if conn is None:
         return "Error de conexión a la base de datos", 500
 
-    cur = conn.cursor(dictionary=True) # dictionary=True ayuda a que el HTML entienda 'user.nombre'
+    cur = conn.cursor(cursor_factory=RealDictCursor) # dictionary=True ayuda a que el HTML entienda 'user.nombre'
     
     # 2. Ejecutamos la consulta en la tabla 'datos'
     cur.execute("SELECT id, nombre, email, telefono, rol, numero_documento, tipo_documento FROM datos")
@@ -100,21 +92,21 @@ def index():
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             
             # 2. Base de la consulta con el subquery de favoritos (LA MAGIA)
             # Si el usuario está logueado, cuenta si el producto está en su tabla favoritos
             query = """
                 SELECT p.*, u.nombre as nombre_productor, u.nombre_finca,
                 (SELECT COUNT(*) FROM favoritos f 
-                 WHERE f.producto_id = p.id AND f.usuario_id = %s) as es_favorito
+                WHERE f.producto_id = p.id AND f.usuario_id = %s) as es_favorito
                 FROM productos p 
                 JOIN datos u ON p.productor_id = u.id 
             """
             
             # 3. Filtros de búsqueda
             if query_param:
-                query += " WHERE (p.nombreproducto LIKE %s OR u.nombre_finca LIKE %s)"
+                query += " WHERE (p.nombreproducto ILIKE %s OR u.nombre_finca ILIKE %s)"
                 query += " ORDER BY u.nombre ASC"
                 # Pasamos user_id primero por el subquery, luego los términos de búsqueda
                 cursor.execute(query, (user_id, f"%{query_param}%", f"%{query_param}%"))
@@ -147,7 +139,7 @@ def mostrar_categoria(cat_slug):
 
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             query = """
                 SELECT p.*, u.nombre as nombre_productor, u.nombre_finca 
                 FROM productos p 
@@ -175,7 +167,7 @@ def login():
         conn = get_db_connection()
         if conn:
             try:
-                cursor = conn.cursor(dictionary=True)
+                cursor = conn.cursor(cursor_factory=RealDictCursor)
                 # Seleccionamos todo de la tabla 'datos' (asegúrate que así se llame tu tabla de usuarios)
                 cursor.execute('SELECT * FROM datos WHERE email = %s', (email,))
                 usuario = cursor.fetchone()
@@ -358,7 +350,7 @@ def paginacliente():
 
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             # Traemos todos los datos del usuario de la tabla 'datos'
             cursor.execute('SELECT * FROM datos WHERE id = %s', (user_id,))
             usuario_db = cursor.fetchone()
@@ -388,7 +380,7 @@ def paginaproductor():
     productos = []
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute("SELECT * FROM productos WHERE productor_id = %s", (productor_id,))
             productos = cursor.fetchall()
         finally:
@@ -403,7 +395,7 @@ def detalle_producto(id):
     producto = None
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             query = """
                 SELECT p.*, u.nombre as nombre_vendedor, u.nombre_finca 
                 FROM productos p 
@@ -440,7 +432,7 @@ def agregar_al_carrito(id):
 
     cantidad = int(request.form.get('cantidad', 1))
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # IMPORTANTE: Revisa que el nombre de tu tabla sea exactamente 'carrito'
@@ -480,7 +472,7 @@ def ver_carrito():
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     # 2. SELECT con JOIN para traer los nombres y fotos de los productos
     # Ajusta los nombres de las tablas si son diferentes en tu BD
@@ -530,7 +522,7 @@ def actualizar_carrito(id, accion):
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # Buscamos el item en el carrito usando su ID de la tabla carrito
@@ -590,7 +582,7 @@ def procesar_pago():
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     # 1. Traer los productos del carrito para el resumen lateral
     query = """
@@ -625,7 +617,7 @@ def perfil():
     usuario = None
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute("SELECT * FROM datos WHERE id = %s", (user_id,))
             usuario = cursor.fetchone()
         finally:
@@ -641,7 +633,7 @@ def feedback():
     mensajes = []
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             # Traemos los mensajes, el nombre del usuario y la fecha
             query = """
                 SELECT c.mensaje, c.fecha, u.nombre 
@@ -671,7 +663,7 @@ def ver_favoritos():
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             query = """
                 SELECT p.*, u.nombre as nombre_productor 
                 FROM productos p
@@ -724,7 +716,11 @@ def agregar_favorito(producto_id):
         try:
             cursor = conn.cursor()
             # INSERT IGNORE evita errores si el usuario intenta agregar el mismo producto dos veces
-            query = "INSERT IGNORE INTO favoritos (usuario_id, producto_id) VALUES (%s, %s)"
+            query = """
+            INSERT INTO favoritos (usuario_id, producto_id)
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING
+            """
             cursor.execute(query, (user_id, producto_id))
             conn.commit()
             flash('Añadido a tus favoritos ❤️', 'success')
@@ -760,7 +756,7 @@ def mis_pedidos():
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             # CAMBIO CLAVE: Usamos 'cliente_id' para que coincida con tu CREATE TABLE
             query = "SELECT * FROM pedidos WHERE cliente_id = %s ORDER BY fecha DESC"
             cursor.execute(query, (user_id,))
@@ -837,12 +833,12 @@ def chat(id_productor):
     mensajes = []
     
     if conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         # Traemos los mensajes donde yo soy emisor y él receptor, O AL REVÉS
         query = """
             SELECT * FROM mensajes 
             WHERE (emisor_id = %s AND receptor_id = %s) 
-               OR (emisor_id = %s AND receptor_id = %s)
+            OR (emisor_id = %s AND receptor_id = %s)
             ORDER BY fecha ASC
         """
         cursor.execute(query, (user_id, id_productor, id_productor, user_id))
@@ -895,7 +891,7 @@ def bandeja():
     chats = []
     
     if conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         # Esta consulta busca a la OTRA persona de la conversación
         # Si yo soy el emisor, me trae al receptor. Si yo soy el receptor, me trae al emisor.
         query = """
@@ -963,7 +959,7 @@ def editar_producto(id):
     # Si es GET, buscamos el producto para mostrarlo en un formulario
     producto = None
     if conn:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT * FROM productos WHERE id = %s", (id,))
         producto = cursor.fetchone()
         conn.close()
@@ -997,7 +993,7 @@ def finalizar_pedido():
     
     if conn:
         try:
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             
             # 1. Obtenemos los productos que el usuario tiene en su carrito
             cursor.execute("SELECT producto_id, cantidad FROM carrito WHERE usuario_id = %s", (user_id,))
