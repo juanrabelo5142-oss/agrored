@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
-import psycopg2  # Cambiado de mysql.connector
-from psycopg2.extras import RealDictCursor # Para mantener la compatibilidad con diccionarios
+import psycopg2  
+from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
@@ -14,18 +14,17 @@ UPLOAD_FOLDER = os.path.join('static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
-# --- FUNCIÓN DE CONEXIÓN CORREGIDA PARA POSTGRESQL ---
+# --- CONEXIÓN ÚNICA A POSTGRESQL (RENDER) ---
 def get_db_connection():
-    # Obtiene la URL de la variable de entorno que configuraste en Render
     database_url = os.environ.get('DATABASE_URL')
-    
-    # Corrección necesaria: SQLAlchemy y psycopg2 a veces requieren 'postgresql://' en lugar de 'postgres://'
     if database_url and database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
-    
-    # Conexión a PostgreSQL en Render
-    conn = psycopg2.connect(database_url)
-    return conn
+    try:
+        conn = psycopg2.connect(database_url)
+        return conn
+    except Exception as e:
+        print(f"Error de conexión: {e}")
+        return None
 
 CATEGORIA_TITULOS = {
     'verduras': 'Verduras Frescas',
@@ -33,14 +32,22 @@ CATEGORIA_TITULOS = {
     'frutas': 'Frutas de Temporada',
 }
 
-# ----------------- Funciones de Utilidad -----------------
+# ----------------- Decoradores de Seguridad -----------------
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Debes iniciar sesión para acceder.', 'warning')
+        if 'email' not in session:
+            flash('Inicia sesión para continuar.', 'warning')
             return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('rol') != 'administrador':
+            return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -48,230 +55,153 @@ def login_required(f):
 
 @app.route('/')
 def index():
-    try:
-        conn = get_db_connection()
+    query_param = request.args.get('q', '').strip()
+    user_id = session.get('user_id')
+    conn = get_db_connection()
+    productores_data = {}
+    
+    if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM productos ORDER BY id DESC LIMIT 8")
+        # Adaptado a PostgreSQL: COALESCE para manejar nulos y subquery para favoritos
+        query = """
+            SELECT p.*, u.nombre as nombre_productor, u.nombre_finca,
+            (SELECT COUNT(*) FROM favoritos f WHERE f.producto_id = p.id AND f.usuario_id = %s) as es_favorito
+            FROM productos p 
+            JOIN datos u ON p.productor_id = u.id 
+        """
+        if query_param:
+            query += " WHERE (p.nombreproducto ILIKE %s OR u.nombre_finca ILIKE %s)"
+            cur.execute(query + " ORDER BY u.nombre ASC", (user_id, f"%{query_param}%", f"%{query_param}%"))
+        else:
+            cur.execute(query + " ORDER BY u.nombre ASC", (user_id,))
+        
         productos = cur.fetchall()
+        for prod in productos:
+            nombre = prod['nombre_productor']
+            if nombre not in productores_data:
+                productores_data[nombre] = []
+            productores_data[nombre].append(prod)
         cur.close()
         conn.close()
-        return render_template('index.html', productos=productos)
-    except Exception as e:
-        print(f"Error en index: {e}")
-        return render_template('index.html', productos=[])
 
-@app.route('/registrarse', methods=['GET', 'POST'])
-def registrarse():
-    if request.method == 'POST':
-        nombre = request.form['nombre']
-        email = request.form['email']
-        password = request.form['password']
-        rol = request.form.get('rol', 'cliente')
-        
-        hashed_password = generate_password_hash(password)
-        
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("INSERT INTO datos (nombre, email, password, rol) VALUES (%s, %s, %s, %s)", 
-                       (nombre, email, hashed_password, rol))
-            conn.commit()
-            cur.close()
-            conn.close()
-            flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
-            return redirect(url_for('login'))
-        except Exception as e:
-            print(f"Error al registrar: {e}")
-            flash('Error al registrar usuario. El correo podría ya existir.', 'error')
-            
-    return render_template('registrarse.html')
+    return render_template('index.html', productores=productores_data, busqueda=query_param)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        
-        try:
-            conn = get_db_connection()
+        email = request.form.get('email')
+        contrasena = request.form.get('contrasena')
+        conn = get_db_connection()
+        if conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
-            cur.execute("SELECT * FROM datos WHERE email = %s", (email,))
-            user = cur.fetchone()
+            cur.execute('SELECT * FROM datos WHERE email = %s', (email,))
+            usuario = cur.fetchone()
             cur.close()
             conn.close()
-            
-            if user and check_password_hash(user['password'], password):
-                session['user_id'] = user['id']
-                session['user_nombre'] = user['nombre']
-                session['user_rol'] = user['rol']
-                flash(f'Bienvenido, {user["nombre"]}!', 'success')
-                return redirect(url_for('index'))
-            else:
-                flash('Correo o contraseña incorrectos.', 'error')
-        except Exception as e:
-            print(f"Error en login: {e}")
-            flash('Error en la base de datos.', 'error')
-            
-    return render_template('login.html')
+            if usuario and check_password_hash(usuario['contrasena'], contrasena):
+                session.update({
+                    'email': usuario['email'], 'rol': usuario['rol'],
+                    'user_id': usuario['id'], 'nombre': usuario['nombre'],
+                    'nombre_finca': usuario.get('nombre_finca')
+                })
+                destinos = {'administrador': 'paginaadministrador', 'productor': 'paginaproductor', 'cliente': 'paginacliente'}
+                return redirect(url_for(destinos.get(usuario['rol'], 'index')))
+            flash('Correo o contraseña incorrectos.', 'error')
+    return render_template('iniciosesion.html')
 
-@app.route('/productos/<categoria>')
-def ver_productos(categoria):
-    titulo = CATEGORIA_TITULOS.get(categoria, 'Productos')
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM productos WHERE categoria = %s", (categoria,))
-        productos = cur.fetchall()
-        cur.close()
-        conn.close()
-        return render_template('productos.html', productos=productos, titulo=titulo)
-    except Exception as e:
-        print(f"Error en productos: {e}")
-        return render_template('productos.html', productos=[], titulo=titulo)
-
-@app.route('/perfil')
-@login_required
-def perfil():
-    return render_template('perfil.html')
-
-@app.route('/vendedor/subir', methods=['GET', 'POST'])
-@login_required
-def subir_producto():
-    if session.get('user_rol') != 'vendedor':
-        flash('Solo los vendedores pueden subir productos.', 'error')
-        return redirect(url_for('index'))
-        
+@app.route('/registrarse', methods=['GET', 'POST'])
+def registrarse():
     if request.method == 'POST':
-        nombre = request.form['nombre']
-        precio = request.form['precio']
-        categoria = request.form['categoria']
-        descripcion = request.form['descripcion']
-        stock = request.form['stock']
-        imagen = request.files['imagen']
-        
-        if imagen:
-            filename = secure_filename(imagen.filename)
-            imagen.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            
+        data = request.form
+        pwd_hash = generate_password_hash(data.get('contrasena'))
+        conn = get_db_connection()
+        if conn:
             try:
-                conn = get_db_connection()
                 cur = conn.cursor()
-                cur.execute("""
-                    INSERT INTO productos (nombre, precio, categoria, descripcion, imagen, vendedor_id, stock) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """, (nombre, precio, categoria, descripcion, filename, session['user_id'], stock))
+                cur.execute("""INSERT INTO datos (nombre, email, contrasena, tipo_documento, numero_documento, telefono, direccion, departamento, municipio, codigo_postal, rol, nombre_finca) 
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
+                    (data.get('nombre'), data.get('email'), pwd_hash, data.get('tipo_documento'), data.get('numero_documento'), 
+                     data.get('telefono'), data.get('direccion'), data.get('departamento'), data.get('municipio'), data.get('codigo_postal'), data.get('rol'), data.get('nombre_finca')))
                 conn.commit()
-                cur.close()
-                conn.close()
-                flash('Producto publicado con éxito.', 'success')
-                return redirect(url_for('index'))
+                flash('¡Registro exitoso!', 'success')
+                return redirect(url_for('login'))
             except Exception as e:
-                print(f"Error al subir: {e}")
-                flash('Error al guardar en la base de datos.', 'error')
-                
-    return render_template('subir_producto.html')
+                flash(f'Error: El correo o documento ya existen.', 'error')
+            finally:
+                conn.close()
+    return render_template('registrarse.html')
 
-@app.route('/feedback', methods=['GET', 'POST'])
-def feedback():
-    if request.method == 'POST':
-        nombre = request.form['nombre']
-        mensaje = request.form['mensaje']
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("INSERT INTO feedback (nombre, mensaje) VALUES (%s, %s)", (nombre, mensaje))
-            conn.commit()
-            cur.close()
-            conn.close()
-            flash('Gracias por tus comentarios.', 'success')
-            return redirect(url_for('index'))
-        except Exception as e:
-            print(f"Error en feedback: {e}")
-    return render_template('feedback.html')
-
-@app.route('/carrito/agregar/<int:producto_id>')
+@app.route('/carrito/agregar/<int:id>', methods=['POST', 'GET'])
 @login_required
-def agregar_al_carrito(producto_id):
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO carrito (usuario_id, producto_id) VALUES (%s, %s)", (session['user_id'], producto_id))
+def agregar_al_carrito(id):
+    usuario_id = session.get('user_id')
+    cantidad = int(request.form.get('cantidad', 1))
+    conn = get_db_connection()
+    if conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT id, cantidad FROM carrito WHERE usuario_id = %s AND producto_id = %s", (usuario_id, id))
+        item = cur.fetchone()
+        if item:
+            cur.execute("UPDATE carrito SET cantidad = cantidad + %s WHERE id = %s", (cantidad, item['id']))
+        else:
+            cur.execute("INSERT INTO carrito (usuario_id, producto_id, cantidad, fecha_agregado) VALUES (%s, %s, %s, NOW())", (usuario_id, id, cantidad))
         conn.commit()
-        cur.close()
         conn.close()
-        flash('Producto añadido al carrito.', 'success')
-    except Exception as e:
-        print(f"Error carrito: {e}")
-    return redirect(request.referrer or url_for('index'))
+    return redirect(url_for('ver_carrito'))
 
 @app.route('/carrito')
 @login_required
 def ver_carrito():
-    try:
-        conn = get_db_connection()
+    usuario_id = session.get('user_id')
+    conn = get_db_connection()
+    items, subtotal = [], 0
+    if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("""
-            SELECT c.id as carrito_id, p.* FROM carrito c 
-            JOIN productos p ON c.producto_id = p.id 
-            WHERE c.usuario_id = %s
-        """, (session['user_id'],))
+        cur.execute("SELECT c.id as carrito_id, c.cantidad, p.nombreproducto, p.precio, p.ruta_imagen FROM carrito c JOIN productos p ON c.producto_id = p.id WHERE c.usuario_id = %s", (usuario_id,))
         items = cur.fetchall()
-        total = sum(item['precio'] for item in items)
-        cur.close()
+        subtotal = sum(i['precio'] * i['cantidad'] for i in items)
         conn.close()
-        return render_template('carrito.html', items=items, total=total)
-    except Exception as e:
-        print(f"Error ver carrito: {e}")
-        return render_template('carrito.html', items=[], total=0)
+    return render_template('carrito.html', items_carrito=items, subtotal=subtotal, envio=5000 if items else 0, total=subtotal + (5000 if items else 0))
 
-@app.route('/comprar', methods=['POST'])
+@app.route('/mis-pedidos')
 @login_required
-def procesar_compra():
-    user_id = session.get('user_id')
-    if user_id:
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
-            
-            # 1. Obtener productos del carrito para restar el stock
-            cursor.execute("SELECT producto_id, COUNT(*) as cantidad FROM carrito WHERE usuario_id = %s GROUP BY producto_id", (user_id,))
-            items_carrito = cursor.fetchall()
+def mis_pedidos():
+    conn = get_db_connection()
+    pedidos = []
+    if conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM pedidos WHERE cliente_id = %s ORDER BY fecha DESC", (session['user_id'],))
+        pedidos = cur.fetchall()
+        conn.close()
+    return render_template('mis_pedidos.html', pedidos=pedidos)
 
-            if not items_carrito:
-                flash("El carrito está vacío", "warning")
-                return redirect(url_for('ver_carrito'))
-
-            # 2. Por cada producto, restamos el stock
-            for item in items_carrito:
-                query_stock = """
-                    UPDATE productos 
-                    SET stock = stock - %s 
-                    WHERE id = %s AND stock >= %s
-                """
-                cursor.execute(query_stock, (item['cantidad'], item['producto_id'], item['cantidad']))
-
-            # 3. Limpiamos el carrito
-            cursor.execute("DELETE FROM carrito WHERE usuario_id = %s", (user_id,))
-            
-            conn.commit()
-            flash('¡Compra realizada! El stock ha sido actualizado 🚀', 'success')
-            
-        except Exception as e:
-            conn.rollback()
-            print(f"Error al procesar compra: {e}")
-            flash('Hubo un error al procesar tu pedido', 'error')
-        finally:
-            conn.close()
-            
-    return redirect(url_for('index'))
+@app.route('/agregarpro', methods=['POST'])
+@login_required
+def agregarpro():
+    if session['rol'] != 'productor': return redirect(url_for('index'))
+    f = request.files.get('imagen_archivo')
+    ruta_db = 'uploads/productos/default.jpg'
+    if f:
+        fname = secure_filename(f.filename)
+        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'productos'), exist_ok=True)
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], 'productos', fname))
+        ruta_db = f'uploads/productos/{fname}'
+    
+    conn = get_db_connection()
+    if conn:
+        cur = conn.cursor()
+        cur.execute("INSERT INTO productos (nombreproducto, precio, stock, categoria, descripcion, ruta_imagen, productor_id) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                   (request.form.get('nombreproducto'), request.form.get('precio'), request.form.get('stock'), request.form.get('categoria'), request.form.get('descripcion'), ruta_db, session['user_id']))
+        conn.commit()
+        conn.close()
+    return redirect(url_for('paginaproductor'))
 
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Has cerrado sesión correctamente.', 'info')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    port = int(os.environ.get('PORT', 10000))
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
