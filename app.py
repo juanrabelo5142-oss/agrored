@@ -851,7 +851,13 @@ def chat(id_productor):
         # Dentro de la función chat en app.py
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""UPDATE mensajes SET leido = 1 WHERE emisor_id = %s AND receptor_id = %s AND leido = 0""", (id_productor, user_id))
+        cursor.execute("""
+        UPDATE mensajes 
+        SET leido = TRUE
+        WHERE emisor_id = %s 
+        AND receptor_id = %s 
+        AND leido = FALSE
+        """, (id_productor, user_id))
         conn.commit()
 
     return render_template('chat.html', 

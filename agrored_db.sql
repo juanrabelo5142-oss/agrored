@@ -116,36 +116,41 @@ INSERT INTO `feedback` (`id`, `calificacion`, `email`, `mensaje`, `fecha_envio`)
 
 -- --------------------------------------------------------
 
---
--- Estructura de tabla para la tabla `mensajes`
---
+```sql
+-- =========================================
+-- TABLA MENSAJES PARA POSTGRESQL
+-- =========================================
 
-CREATE TABLE `mensajes` (
-  `id` int(11) NOT NULL,
-  `emisor_id` int(11) NOT NULL,
-  `receptor_id` int(11) NOT NULL,
-  `producto_id` int(11) DEFAULT NULL,
-  `contenido` text NOT NULL,
-  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
-  `leido` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS mensajes CASCADE;
 
---
--- Volcado de datos para la tabla `mensajes`
---
+CREATE TABLE mensajes (
+    id SERIAL PRIMARY KEY,
 
-INSERT INTO `mensajes` (`id`, `emisor_id`, `receptor_id`, `producto_id`, `contenido`, `fecha`, `leido`) VALUES
-(5, 4, 10, NULL, 'Hola david como estas', '2026-04-07 12:28:38', 1),
-(6, 10, 4, NULL, 'hola bien y tu', '2026-04-07 12:30:08', 1),
-(7, 10, 4, NULL, 'bien bien', '2026-04-07 12:30:33', 1),
-(8, 10, 4, NULL, 'grgr', '2026-04-07 12:31:03', 1),
-(9, 10, 4, NULL, 'ergrgerg', '2026-04-07 12:32:05', 1),
-(10, 4, 10, NULL, 'hola que mas', '2026-04-07 12:32:26', 1),
-(11, 10, 4, NULL, 'bien', '2026-04-07 12:32:43', 1),
-(12, 4, 10, NULL, 'aaaa excelelte', '2026-04-07 12:36:56', 1),
-(13, 10, 4, NULL, 'aaaa listo todo bien', '2026-04-07 12:37:07', 1),
-(14, 4, 10, NULL, 'y que mas', '2026-04-07 12:45:13', 1);
+    emisor_id INTEGER NOT NULL,
+    receptor_id INTEGER NOT NULL,
+    producto_id INTEGER,
 
+    contenido TEXT NOT NULL,
+
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    leido BOOLEAN DEFAULT FALSE,
+
+    CONSTRAINT fk_emisor
+        FOREIGN KEY (emisor_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_receptor
+        FOREIGN KEY (receptor_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_producto
+        FOREIGN KEY (producto_id)
+        REFERENCES productos(id)
+        ON DELETE SET NULL
+);
 -- --------------------------------------------------------
 
 --
