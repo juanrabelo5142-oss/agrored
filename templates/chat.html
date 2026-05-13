@@ -141,15 +141,20 @@
             border-radius: 12px 0 12px 12px;
         }
 
-        .time { 
-            display: inline-block;
-            font-size: 10px; 
-            margin-left: 10px;
-            float: right;
-            margin-top: 5px;
-            color: #666;
-            font-weight: 800;
-        }
+    .contenedor-padre {
+    display: flex;
+    justify-content:空间-between; /* Esto manda los elementos a los extremos */
+    align-items: center;
+}
+
+.time { 
+    /* Quitamos el float y el display inline-block */
+    font-size: 10px; 
+    margin-left: 10px;
+    margin-top: 5px;
+    color: #666;
+    font-weight: 800;
+}
 
         /* BARRA DE ENTRADA (Estilo WhatsApp) */
         .input-bar-container {
