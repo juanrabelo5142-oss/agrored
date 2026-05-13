@@ -248,13 +248,13 @@
 
     <nav>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <a href="{{ url_for('index') }}" class="brand-container">
+            <a href="{{ url_for('index') }}" class="brand-container" translate="no">
                 <img src="{{ url_for('static', filename='img/logo1.png') }}" height="30">
                 <div class="logo">AGRO<span>RED</span></div>
             </a>
 
             <div class="nav-links">
-                <div class="dropdown">
+                <div class="dropdown" translate="no">
                     <button class="dropbtn">Categorías <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">expand_more</span></button>
                     <div class="dropdown-content">
                         <a href="{{ url_for('mostrar_categoria', cat_slug='verduras') }}">Verduras</a>

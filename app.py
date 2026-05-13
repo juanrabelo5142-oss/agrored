@@ -200,7 +200,7 @@ def login():
 
 @app.route('/registrarse', methods=['GET', 'POST'])
 def registrarse():
-    departamentos = ["Amazonas", "Antioquia", "Arauca", "Atlántico", "Bolívar", "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó", "Córdoba", "Cundinamarca", "Guainía", "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", "Norte de Santander", "Putumayo", "Quindío", "Risaralda", "San Andrés y Providencia", "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada"]
+    departamentos = ["Cundinamarca", "Boyacá", "Bogotá", "Nariño", "Meta", "Tolima", "Valle del Cauca", "Huila", "Quindío"]
 
     if request.method == 'POST':
         # Captura de TODOS los datos del formulario
@@ -212,8 +212,8 @@ def registrarse():
         telefono = request.form.get('telefono')
         direccion = request.form.get('direccion')
         departamento = request.form.get('departamento') 
-        municipio = request.form.get('municipio')        # <-- Te faltaba este
-        codigo_postal = request.form.get('codigo_postal') # <-- Te faltaba este
+        municipio = request.form.get('municipio')       
+        codigo_postal = request.form.get('codigo_postal') 
         rol = request.form.get('rol')
         nombre_finca = request.form.get('nombre_finca') if rol == 'productor' else None
 
@@ -221,7 +221,6 @@ def registrarse():
         if conn:
             try:
                 cursor = conn.cursor()
-                # Query actualizado con municipio y codigo_postal (12 columnas en total)
                 query = """INSERT INTO datos (nombre, email, contrasena, tipo_documento, 
                             numero_documento, telefono, direccion, departamento, municipio, 
                             codigo_postal, rol, nombre_finca) 
