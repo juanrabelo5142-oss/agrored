@@ -47,7 +47,7 @@
             top: 0;
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            flex-wrap: wrap; /* Permite que los elementos bajen en móviles */
+            flex-wrap: wrap;
         }
 
         .brand-container { display: flex; align-items: center; text-decoration: none; }
@@ -69,6 +69,7 @@
         }
         .nav-links a:hover { color: var(--verde-agro); }
 
+        /* DROPDOWN MEJORADO PARA CLIC */
         .dropdown { position: relative; }
         .dropdown-content {
             display: none;
@@ -81,10 +82,22 @@
             box-shadow: var(--sombra-suave);
             overflow: hidden;
             border: 1px solid #eee;
+            z-index: 1100;
         }
-        .dropdown-content a { padding: 12px 15px; display: block; font-size: 12px; border-bottom: 1px solid #f9f9f9; }
+
+        /* Clase que activa el menú con JS */
+        .dropdown-content.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-content a { padding: 12px 15px; display: block; font-size: 12px; border-bottom: 1px solid #f9f9f9; text-decoration: none; color: var(--negro); }
         .dropdown-content a:hover { background: var(--gris-fondo); color: var(--verde-agro); }
-        .dropdown:hover .dropdown-content { display: block; }
 
         .nav-right { display: flex; align-items: center; gap: 15px; }
 
@@ -108,7 +121,7 @@
         .btn-login { color: var(--negro); border: 1px solid #ddd; }
         .btn-register { background: var(--verde-agro); color: white; }
 
-        /* --- HERO --- */
+        /* --- HERO NÍTIDO --- */
         .hero { 
             height: 400px; 
             background: var(--amarillo-agro); 
@@ -120,11 +133,17 @@
             overflow: hidden;
             position: relative;
         }
-        .hero img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .hero img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.7; } /* Opacidad 1 para quitar el tinte */
         .hero-text { position: relative; z-index: 2; text-align: center; padding: 0 20px; }
-        .hero-text h1 { font-size: clamp(30px, 8vw, 50px); font-weight: 800; color: var(--negro); line-height: 1.1; }
+        .hero-text h1 { 
+            font-size: clamp(30px, 8vw, 50px); 
+            font-weight: 800; 
+            color: var(--negro); 
+            line-height: 1.1;
+            text-shadow: 2px 2px 15px rgba(255,255,255,0.9); /* Mejora lectura sobre imagen nítida */
+        }
         .hero-text h1 span { color: var(--verde-agro); }
-        .hero-text p { font-weight: 600; color: var(--negro); margin-top: 10px; letter-spacing: 2px; font-size: clamp(10px, 3vw, 14px); }
+        .hero-text p { font-weight: 700; color: var(--negro); margin-top: 10px; letter-spacing: 2px; font-size: clamp(10px, 3vw, 14px); text-shadow: 1px 1px 5px rgba(255,255,255,0.8); }
 
         /* --- MAIN CONTENT --- */
         .main-content { padding: 40px 5%; }
@@ -216,26 +235,11 @@
 
         footer { background: var(--negro); color: white; padding: 40px 5%; text-align: center; }
 
-        /* --- AJUSTES RESPONSIVE (MEDIA QUERIES) --- */
-        @media (max-width: 1024px) {
-            .search-container { width: 200px; }
-            .nav-links { gap: 10px; }
-        }
-
         @media (max-width: 768px) {
-            nav { padding: 10px 5%; gap: 10px; }
-            .nav-links { display: none; } /* Ocultamos links de texto en móvil */
-            .search-container { order: 3; width: 100%; margin-top: 10px; } /* Buscador abajo al centro */
-            .hero { height: 250px; margin: 10px 5%; }
-            .btn-nav-scroll { display: none; } /* Ocultamos flechas (mejor usar scroll táctil) */
-            .card { min-width: 220px; }
-            .top-bar span:last-child { display: none; } /* Ocultamos ubicación para ahorrar espacio */
-        }
-
-        @media (max-width: 480px) {
-            .auth-buttons .btn-auth { padding: 8px 12px; font-size: 10px; }
-            .logo { font-size: 20px; }
-            .section-title h2 { font-size: 1.1rem; }
+            .nav-links { display: none; }
+            .search-container { order: 3; width: 100%; margin-top: 10px; }
+            .hero { height: 250px; }
+            .btn-nav-scroll { display: none; }
         }
     </style>
 </head>
@@ -255,8 +259,10 @@
 
             <div class="nav-links">
                 <div class="dropdown" translate="no">
-                    <button class="dropbtn">Categorías <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">expand_more</span></button>
-                    <div class="dropdown-content">
+                    <button class="dropbtn" onclick="toggleDropdown(event)">
+                        Categorías <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">expand_more</span>
+                    </button>
+                    <div class="dropdown-content" id="catDropdown">
                         <a href="{{ url_for('mostrar_categoria', cat_slug='verduras') }}">Verduras</a>
                         <a href="{{ url_for('mostrar_categoria', cat_slug='frutas') }}">Frutas</a>
                         <a href="{{ url_for('mostrar_categoria', cat_slug='granos') }}">Granos</a>
@@ -385,6 +391,25 @@
     </footer>
 
     <script>
+        // Función para abrir/cerrar categorías
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            document.getElementById("catDropdown").classList.toggle("show");
+        }
+
+        // Cerrar menú si se hace clic fuera
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
         function scrollRow(btn, direction) {
             const container = btn.parentElement.querySelector('.product-scroll');
             container.scrollBy({ left: direction * 280, behavior: 'smooth' });
